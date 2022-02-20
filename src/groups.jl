@@ -332,7 +332,7 @@ macro case(title, xs...)
 end
 
 function benchmarkset_m(title, ex::Expr)
-    stack = GlobalRef(BenchmarkTools, :benchmark_stack)
+    stack = GlobalRef(BenchmarkExt, :benchmark_stack)
     init = quote
         if isempty($stack)
             push!($stack, $BenchmarkGroup())
@@ -359,7 +359,7 @@ function benchmarkset_m(title, ex::Expr)
 end
 
 function benchmarkset_block(title, ex::Expr)
-    stack = GlobalRef(BenchmarkTools, :benchmark_stack)
+    stack = GlobalRef(BenchmarkExt, :benchmark_stack)
     quote
         let $(Symbol("#root#")) = last($stack)
             $(Symbol("#root#"))[$title] = $(Symbol("#suite#")) = BenchmarkGroup()

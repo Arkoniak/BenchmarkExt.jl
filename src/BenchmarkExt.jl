@@ -1,4 +1,4 @@
-module BenchmarkTools
+module BenchmarkExt
 
 using JSON
 using Base.Iterators
@@ -10,7 +10,7 @@ using Printf
 using Profile
 
 
-const BENCHMARKTOOLS_VERSION = v"1.0.0"
+const BENCHMARKEXT_VERSION = v"0.1.0"
 
 ##############
 # Parameters #
@@ -78,4 +78,4 @@ export tune!,
 
 include("serialization.jl")
 
-end # module BenchmarkTools
+end # module BenchmarkExt

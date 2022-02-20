@@ -1,5 +1,5 @@
 const VERSIONS = Dict("Julia" => string(VERSION),
-                      "BenchmarkTools" => string(BENCHMARKTOOLS_VERSION))
+                      "BenchmarkExt" => string(BENCHMARKEXT_VERSION))
 
 # TODO: Add any new types as they're added
 const SUPPORTED_TYPES = Dict{Symbol,Type}(Base.typename(x).name => x for x in [
