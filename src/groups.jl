@@ -167,7 +167,7 @@ struct TagFilter
 end
 
 macro tagged(expr)
-    return :(BenchmarkTools.TagFilter(tags -> $(tagpredicate!(expr))))
+    return :(BenchmarkExt.TagFilter(tags -> $(tagpredicate!(expr))))
 end
 
 tagpredicate!(@nospecialize tag) = :(in(makekey($(esc(tag))), tags))
@@ -289,7 +289,7 @@ function Base.show(io::IO, group::BenchmarkGroup)
         nbound = get(io, :boundto, 10)
     end
 
-    println(io, "$(length(group))-element BenchmarkTools.BenchmarkGroup:")
+    println(io, "$(length(group))-element BenchmarkExt.BenchmarkGroup:")
     pad = get(io, :pad, "")
     print(io, pad, "  tags: ", tagrepr(group.tags))
     count = 1

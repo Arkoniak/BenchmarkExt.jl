@@ -1,15 +1,15 @@
-using BenchmarkTools
+using BenchmarkExt
 using Documenter
 using DocThemeIndigo
-indigo = DocThemeIndigo.install(BenchmarkTools)
+indigo = DocThemeIndigo.install(BenchmarkExt)
 
 makedocs(;
-    modules=[BenchmarkTools],
-    repo="https://github.com/JuliaCI/BenchmarkTools.jl/blob/{commit}{path}#{line}",
-    sitename="BenchmarkTools.jl",
+    modules=[BenchmarkExt],
+    repo="https://github.com/JuliaCI/BenchmarkExt.jl/blob/{commit}{path}#{line}",
+    sitename="BenchmarkExt.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://JuliaCI.github.io/BenchmarkTools.jl",
+        canonical="https://JuliaCI.github.io/BenchmarkExt.jl",
         assets=String[indigo],
     ),
     pages=[
@@ -22,5 +22,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/JuliaCI/BenchmarkTools.jl",
+    repo="github.com/JuliaCI/BenchmarkExt.jl",
 )

@@ -6,11 +6,7 @@ using ReTest
 
 seteq(a, b) = length(a) == length(b) == length(intersect(a, b))
 
-@testset "BenchmarkGroup" begin
-
-    # setup #
-    #-------#
-
+function setup_vals()
     g1 = BenchmarkGroup(["1", "2"])
 
     t1a = TrialEstimate(Parameters(time_tolerance = .05, memory_tolerance = .05), 32, 1, 2, 3)
@@ -33,12 +29,39 @@ seteq(a, b) = length(a) == length(b) == length(intersect(a, b))
     g2["b"] = t2b
     g2["c"] = tc
 
-    trial = BenchmarkExt.Trial(Parameters(), [1, 2, 5], [0, 1, 1], 3, 56)
+    trial = BenchmarkExt.Trial(Parameters(), [1, 2, 5], [0, 1, 1], [3, 4, 5], [56, 58, 62])
 
     gtrial = BenchmarkGroup([], Dict("t" => trial))
 
-    # tests #
-    #-------#
+    (g1, g1copy, g1similar, g2, gtrial, t1a, t1b, tc, t2a, t2b)
+end
+
+function setup_extra(g1, g2, gtrial)
+    groupsa = BenchmarkGroup()
+    groupsa["g1"] = g1
+    groupsa["g2"] = g2
+    g3a = addgroup!(groupsa, "g3", ["3", "4"])
+    g3a["c"] = TrialEstimate(Parameters(time_tolerance = .05, memory_tolerance = .05), 6341, 23, 41, 536)
+    g3a["d"] = TrialEstimate(Parameters(time_tolerance = .13, memory_tolerance = .13), 12341, 3013, 2, 150)
+
+    groups_copy = copy(groupsa)
+    groups_similar = similar(groupsa)
+
+    groupsb = BenchmarkGroup()
+    groupsb["g1"] = g1
+    groupsb["g2"] = g2
+    g3b = addgroup!(groupsb, "g3", ["3", "4"])
+    g3b["c"] = TrialEstimate(Parameters(time_tolerance = .05, memory_tolerance = .05), 1003, 23, 41, 536)
+    g3b["d"] = TrialEstimate(Parameters(time_tolerance = .23, memory_tolerance = .23), 25341, 3013, 2, 150)
+
+    groupstrial = BenchmarkGroup()
+    groupstrial["g"] = gtrial
+
+    (groupsa, g3a, groupsb, g3b, groupstrial, groups_copy, groups_similar)
+end
+
+@testset "BenchmarkGroup" begin
+    g1, g1copy, g1similar, g2, gtrial, t1a, t1b, tc, t2a, t2b = setup_vals()
 
     @test BenchmarkGroup() == BenchmarkGroup([], Dict())
     @test length(g1) == 3
@@ -106,16 +129,18 @@ seteq(a, b) = length(a) == length(b) == length(intersect(a, b))
     @test regressions(judge(g1, g2)).data == Dict("b" => judge(t1b, t2b))
     @test improvements(judge(g1, g2)).data == Dict("a" => judge(t1a, t2a))
 
-    struct Bar end
-    @test BenchmarkExt.invariants(Bar()) == Bar()
-    @test BenchmarkExt.invariants(time, (Bar())) == Bar()
-    @test BenchmarkExt.invariants(memory, (Bar())) == Bar()
-    @test BenchmarkExt.regressions(Bar()) == Bar()
-    @test BenchmarkExt.regressions(time, (Bar())) == Bar()
-    @test BenchmarkExt.regressions(memory, (Bar())) == Bar()
-    @test BenchmarkExt.improvements(Bar()) == Bar()
-    @test BenchmarkExt.improvements(time, (Bar())) == Bar()
-    @test BenchmarkExt.improvements(memory, (Bar())) == Bar()
+    @testset "struct Bar" begin
+        struct Bar end
+        @test BenchmarkExt.invariants(Bar()) == Bar()
+        @test BenchmarkExt.invariants(time, (Bar())) == Bar()
+        @test BenchmarkExt.invariants(memory, (Bar())) == Bar()
+        @test BenchmarkExt.regressions(Bar()) == Bar()
+        @test BenchmarkExt.regressions(time, (Bar())) == Bar()
+        @test BenchmarkExt.regressions(memory, (Bar())) == Bar()
+        @test BenchmarkExt.improvements(Bar()) == Bar()
+        @test BenchmarkExt.improvements(time, (Bar())) == Bar()
+        @test BenchmarkExt.improvements(memory, (Bar())) == Bar()
+    end
 
     @test minimum(gtrial)["t"] == minimum(gtrial["t"])
     @test median(gtrial)["t"] == median(gtrial["t"])
@@ -125,31 +150,8 @@ seteq(a, b) = length(a) == length(b) == length(intersect(a, b))
 end
 
 @testset "BenchmarkGroups of BenchmarkGroups" begin
-    # setup #
-    #-------#
-
-    groupsa = BenchmarkGroup()
-    groupsa["g1"] = g1
-    groupsa["g2"] = g2
-    g3a = addgroup!(groupsa, "g3", ["3", "4"])
-    g3a["c"] = TrialEstimate(Parameters(time_tolerance = .05, memory_tolerance = .05), 6341, 23, 41, 536)
-    g3a["d"] = TrialEstimate(Parameters(time_tolerance = .13, memory_tolerance = .13), 12341, 3013, 2, 150)
-
-    groups_copy = copy(groupsa)
-    groups_similar = similar(groupsa)
-
-    groupsb = BenchmarkGroup()
-    groupsb["g1"] = g1
-    groupsb["g2"] = g2
-    g3b = addgroup!(groupsb, "g3", ["3", "4"])
-    g3b["c"] = TrialEstimate(Parameters(time_tolerance = .05, memory_tolerance = .05), 1003, 23, 41, 536)
-    g3b["d"] = TrialEstimate(Parameters(time_tolerance = .23, memory_tolerance = .23), 25341, 3013, 2, 150)
-
-    groupstrial = BenchmarkGroup()
-    groupstrial["g"] = gtrial
-
-    # tests #
-    #-------#
+    g1, g1copy, g1similar, g2, gtrial, t1a, t1b, tc, t2a, t2b = setup_vals()
+    groupsa, g3a, groupsb, g3b, groupstrial, groups_copy, groups_similar = setup_extra(g1, g2, gtrial)
 
     @test time(groupsa).data == Dict("g1" => time(g1), "g2" => time(g2), "g3" => time(g3a))
     @test gctime(groupsa).data == Dict("g1" => gctime(g1), "g2" => gctime(g2), "g3" => gctime(g3a))
@@ -188,8 +190,11 @@ end
     @test mean(groupstrial)["g"]["t"] == mean(groupstrial["g"]["t"])
     @test params(groupstrial)["g"]["t"] == params(groupstrial["g"]["t"])
 
-    # tagging #
-    #---------#
+end
+
+@testset "Tagging" begin
+    g1, g1copy, g1similar, g2, gtrial, t1a, t1b, tc, t2a, t2b = setup_vals()
+    groupsa, g3a, groupsb, g3b, groupstrial, groups_copy, groups_similar = setup_extra(g1, g2, gtrial)
 
     @test groupsa[@tagged "1"] == BenchmarkGroup([], "g1" => g1)
     @test groupsa[@tagged "2"] == BenchmarkGroup([], "g1" => g1, "g2" => g2)
@@ -233,10 +238,9 @@ end
     @test gnest[@tagged "1" && !(:hi)] == BenchmarkGroup(["1"], 2 => 1)
     @test gnest[@tagged :hi && !("3")] == BenchmarkGroup(["1"], :hi => BenchmarkGroup([], 1 => 1))
     @test gnest[@tagged k] == BenchmarkGroup(["1"], :hi => BenchmarkGroup([], k => BenchmarkGroup(["3"], 1 => 1)))
+end
 
-    # indexing by BenchmarkGroup #
-    #----------------------------#
-
+@testset "Indexing by BenchmarkGroup" begin
     g = BenchmarkGroup()
     d = Dict("1" => 1, "2" => 2, "3" => 3)
     g["a"] = BenchmarkGroup([], copy(d))
@@ -260,10 +264,9 @@ end
     gx["e"] = BenchmarkGroup([], "1" => g["e"]["1"][x["a"]], "3" => g["e"]["3"][x["c"]])
 
     @test g[x] == gx
+end
 
-    # indexing by Vector #
-    #--------------------#
-
+@testset "Indexing by vector" begin
     g1 = BenchmarkGroup(1 => BenchmarkGroup("a" => BenchmarkGroup()))
     g1[[1, "a", :b]] = "hello"
     @test g1[[1, "a", :b]] == "hello"
@@ -284,37 +287,23 @@ end
         @test haskey(g1["test set"], "test case 1")
         @test haskey(g1["test set"], "test case 2")
     end
+end
 
-    # pretty printing #
-    #-----------------#
+@testset "Pretty printing" begin
+    g1, g1copy, g1similar, g2, gtrial, t1a, t1b, tc, t2a, t2b = setup_vals()
 
     g1 = BenchmarkGroup(["1", "2"])
     g1["a"] = t1a
     g1["b"] = t1b
     g1["c"] = tc
 
-    @test sprint(show, g1) == """
-3-element BenchmarkExt.BenchmarkGroup:
-  tags: ["1", "2"]
-  "c" => TrialEstimate(1.000 ns)
-  "b" => TrialEstimate(4.123 μs)
-  "a" => TrialEstimate(32.000 ns)"""
-    @test sprint(show, g1; context = :boundto => 1) == """
-3-element BenchmarkExt.BenchmarkGroup:
-  tags: ["1", "2"]
-  "c" => TrialEstimate(1.000 ns)
-  ⋮"""
-    @test sprint(show, g1; context = :limit => false) == """
-3-element BenchmarkExt.BenchmarkGroup:
-  tags: ["1", "2"]
-  "c" => TrialEstimate(1.000 ns)
-  "b" => TrialEstimate(4.123 μs)
-  "a" => TrialEstimate(32.000 ns)"""
-    @test @test_deprecated(sprint(show, g1; context = :limit => 1)) == """
-3-element BenchmarkExt.BenchmarkGroup:
-  tags: ["1", "2"]
-  "c" => TrialEstimate(1.000 ns)
-  ⋮"""
+    data = read(joinpath(@__DIR__, "data", "test03_pretty.txt"), String)
+    pp = strip.(split(data, "\n\n"))
+
+    @test sprint(show, g1) == pp[1]
+    @test sprint(show, g1; context = :boundto => 1) == pp[2]
+    @test sprint(show, g1; context = :limit => false) == pp[3]
+    @test @test_deprecated(sprint(show, g1; context = :limit => 1)) == pp[4]
 end
 
 end # module

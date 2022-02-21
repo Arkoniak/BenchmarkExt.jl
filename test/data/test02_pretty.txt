@@ -1,0 +1,27 @@
+BenchmarkExt.TrialEstimate: 
+  time:             0.490 ns
+  gctime:           0.000 ns (0.00%)
+  memory:           2 bytes
+  allocs:           1
+
+
+2-element Array{BenchmarkExt.TrialEstimate,1}:
+ 0.490 ns
+ 1.000 ns
+
+
+2-element Vector{BenchmarkExt.TrialEstimate}:
+ 0.490 ns
+ 1.000 ns
+
+
+BenchmarkExt.Trial: 2 samples with 1 evaluation.
+ Range (min … max):  1.000 ns … 1.010 ns  ┊ GC (min … max): 0.00% … 0.00%
+ Time  (median):     1.005 ns             ┊ GC (median):    0.00%
+ Time  (mean ± σ):   1.005 ns ± 0.007 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
+
+  █                                                       █  
+  █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
+  1 ns           Histogram: frequency by time       1.01 ns <
+
+ Memory estimate: 0 bytes, allocs estimate: 0.

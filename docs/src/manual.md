@@ -1,5 +1,5 @@
 # Manual
-BenchmarkTools was created to facilitate the following tasks:
+BenchmarkExt was created to facilitate the following tasks:
 
 1. Organize collections of benchmarks into manageable benchmark suites
 2. Configure, save, and reload benchmark parameters for convenience, accuracy, and consistency
@@ -14,7 +14,7 @@ Before we get too far, let's define some of the terminology used in this documen
 - "benchmark parameters": the configuration settings that determine how a benchmark trial is performed
 
 The reasoning behind our definition of "sample" may not be obvious to all readers. If the time to execute a benchmark is smaller than the resolution of your timing method, then a single evaluation of the benchmark will generally not produce a valid sample. In that case, one must approximate a valid sample by
-recording the total time `t` it takes to record `n` evaluations, and estimating the sample's time per evaluation as `t/n`. For example, if a sample takes 1 second for 1 million evaluations, the approximate time per evaluation for that sample is 1 microsecond. It's not obvious what the right number of evaluations per sample should be for any given benchmark, so BenchmarkTools provides a mechanism (the `tune!` method) to automatically figure it out for you.
+recording the total time `t` it takes to record `n` evaluations, and estimating the sample's time per evaluation as `t/n`. For example, if a sample takes 1 second for 1 million evaluations, the approximate time per evaluation for that sample is 1 microsecond. It's not obvious what the right number of evaluations per sample should be for any given benchmark, so BenchmarkExt provides a mechanism (the `tune!` method) to automatically figure it out for you.
 
 ## Benchmarking basics
 
@@ -24,7 +24,7 @@ To quickly benchmark a Julia expression, use `@benchmark`:
 
 ```julia
 julia> @benchmark sin(1)
-BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1000 evaluations.
  Range (min … max):  1.442 ns … 53.028 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     1.453 ns              ┊ GC (median):    0.00%
  Time  (mean ± σ):   1.462 ns ±  0.566 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -45,7 +45,7 @@ julia> b = @benchmarkable sin(1); # define the benchmark with default parameters
 julia> tune!(b);
 
 julia> run(b)
-BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1000 evaluations.
  Range (min … max):  1.442 ns … 4.308 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     1.453 ns             ┊ GC (median):    0.00%
  Time  (mean ± σ):   1.456 ns ± 0.056 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -77,22 +77,22 @@ julia> @belapsed sin(1)
 
 You can pass the following keyword arguments to `@benchmark`, `@benchmarkable`, and `run` to configure the execution process:
 
-- `samples`: The number of samples to take. Execution will end if this many samples have been collected. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.samples = 10000`.
-- `seconds`: The number of seconds budgeted for the benchmarking process. The trial will terminate if this time is exceeded (regardless of `samples`), but at least one sample will always be taken. In practice, actual runtime can overshoot the budget by the duration of a sample. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.seconds = 5`.
-- `evals`: The number of evaluations per sample. For best results, this should be kept consistent between trials. A good guess for this value can be automatically set on a benchmark via `tune!`, but using `tune!` can be less consistent than setting `evals` manually. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.evals = 1`.
-- `overhead`: The estimated loop overhead per evaluation in nanoseconds, which is automatically subtracted from every sample time measurement. The default value is `BenchmarkTools.DEFAULT_PARAMETERS.overhead = 0`. `BenchmarkTools.estimate_overhead` can be called to determine this value empirically (which can then be set as the default value, if you want).
-- `gctrial`: If `true`, run `gc()` before executing this benchmark's trial. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.gctrial = true`.
-- `gcsample`: If `true`, run `gc()` before each sample. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.gcsample = false`.
-- `time_tolerance`: The noise tolerance for the benchmark's time estimate, as a percentage. This is utilized after benchmark execution, when analyzing results. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.time_tolerance = 0.05`.
-- `memory_tolerance`: The noise tolerance for the benchmark's memory estimate, as a percentage. This is utilized after benchmark execution, when analyzing results. Defaults to `BenchmarkTools.DEFAULT_PARAMETERS.memory_tolerance = 0.01`.
+- `samples`: The number of samples to take. Execution will end if this many samples have been collected. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.samples = 10000`.
+- `seconds`: The number of seconds budgeted for the benchmarking process. The trial will terminate if this time is exceeded (regardless of `samples`), but at least one sample will always be taken. In practice, actual runtime can overshoot the budget by the duration of a sample. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.seconds = 5`.
+- `evals`: The number of evaluations per sample. For best results, this should be kept consistent between trials. A good guess for this value can be automatically set on a benchmark via `tune!`, but using `tune!` can be less consistent than setting `evals` manually. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.evals = 1`.
+- `overhead`: The estimated loop overhead per evaluation in nanoseconds, which is automatically subtracted from every sample time measurement. The default value is `BenchmarkExt.DEFAULT_PARAMETERS.overhead = 0`. `BenchmarkExt.estimate_overhead` can be called to determine this value empirically (which can then be set as the default value, if you want).
+- `gctrial`: If `true`, run `gc()` before executing this benchmark's trial. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.gctrial = true`.
+- `gcsample`: If `true`, run `gc()` before each sample. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.gcsample = false`.
+- `time_tolerance`: The noise tolerance for the benchmark's time estimate, as a percentage. This is utilized after benchmark execution, when analyzing results. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.time_tolerance = 0.05`.
+- `memory_tolerance`: The noise tolerance for the benchmark's memory estimate, as a percentage. This is utilized after benchmark execution, when analyzing results. Defaults to `BenchmarkExt.DEFAULT_PARAMETERS.memory_tolerance = 0.01`.
 
-To change the default values of the above fields, one can mutate the fields of `BenchmarkTools.DEFAULT_PARAMETERS`, for example:
+To change the default values of the above fields, one can mutate the fields of `BenchmarkExt.DEFAULT_PARAMETERS`, for example:
 
 ```julia
 # change default for `seconds` to 2.5
-BenchmarkTools.DEFAULT_PARAMETERS.seconds = 2.50
+BenchmarkExt.DEFAULT_PARAMETERS.seconds = 2.50
 # change default for `time_tolerance` to 0.20
-BenchmarkTools.DEFAULT_PARAMETERS.time_tolerance = 0.20
+BenchmarkExt.DEFAULT_PARAMETERS.time_tolerance = 0.20
 ```
 
 Here's an example that demonstrates how to pass these parameters to benchmark definitions:
@@ -109,7 +109,7 @@ You can interpolate values into `@benchmark` and `@benchmarkable` expressions:
 ```julia
 # rand(1000) is executed for each evaluation
 julia> @benchmark sum(rand(1000))
-BenchmarkTools.Trial: 10000 samples with 10 evaluations.
+BenchmarkExt.Trial: 10000 samples with 10 evaluations.
  Range (min … max):  1.153 μs … 142.253 μs  ┊ GC (min … max): 0.00% … 96.43%
  Time  (median):     1.363 μs               ┊ GC (median):    0.00%
  Time  (mean ± σ):   1.786 μs ±   4.612 μs  ┊ GC (mean ± σ):  9.58% ±  3.70%
@@ -123,7 +123,7 @@ BenchmarkTools.Trial: 10000 samples with 10 evaluations.
 # rand(1000) is evaluated at definition time, and the resulting
 # value is interpolated into the benchmark expression
 julia> @benchmark sum($(rand(1000)))
-BenchmarkTools.Trial: 10000 samples with 963 evaluations.
+BenchmarkExt.Trial: 10000 samples with 963 evaluations.
  Range (min … max):  84.477 ns … 241.602 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     84.497 ns               ┊ GC (median):    0.00%
  Time  (mean ± σ):   85.125 ns ±   5.262 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -142,7 +142,7 @@ julia> A = rand(1000);
 
 # BAD: A is a global variable in the benchmarking context
 julia> @benchmark [i*i for i in A]
-BenchmarkTools.Trial: 10000 samples with 54 evaluations.
+BenchmarkExt.Trial: 10000 samples with 54 evaluations.
  Range (min … max):  889.241 ns … 29.584 μs  ┊ GC (min … max):  0.00% … 93.33%
  Time  (median):       1.073 μs              ┊ GC (median):     0.00%
  Time  (mean ± σ):     1.296 μs ±  2.004 μs  ┊ GC (mean ± σ):  14.31% ±  8.76%
@@ -155,7 +155,7 @@ BenchmarkTools.Trial: 10000 samples with 54 evaluations.
 
 # GOOD: A is a constant value in the benchmarking context
 julia> @benchmark [i*i for i in $A]
-BenchmarkTools.Trial: 10000 samples with 121 evaluations.
+BenchmarkExt.Trial: 10000 samples with 121 evaluations.
  Range (min … max):  742.455 ns … 11.846 μs  ┊ GC (min … max):  0.00% … 88.05%
  Time  (median):     909.959 ns              ┊ GC (median):     0.00%
  Time  (mean ± σ):     1.135 μs ±  1.366 μs  ┊ GC (mean ± σ):  16.94% ± 12.58%
@@ -210,7 +210,7 @@ julia> let x = 1
 
 ### Setup and teardown phases
 
-BenchmarkTools allows you to pass `setup` and `teardown` expressions to `@benchmark` and `@benchmarkable`. The `setup` expression is evaluated just before sample execution, while the `teardown` expression is evaluated just after sample execution. Here's an example where this kind of thing is useful:
+BenchmarkExt allows you to pass `setup` and `teardown` expressions to `@benchmark` and `@benchmarkable`. The `setup` expression is evaluated just before sample execution, while the `teardown` expression is evaluated just after sample execution. Here's an example where this kind of thing is useful:
 
 ```julia
 julia> x = rand(100000);
@@ -221,7 +221,7 @@ julia> b = @benchmarkable sort!(y) setup=(y = copy($x))
 Benchmark(evals=1, seconds=5.0, samples=10000)
 
 julia> run(b)
-BenchmarkTools.Trial: 819 samples with 1 evaluations.
+BenchmarkExt.Trial: 819 samples with 1 evaluations.
  Range (min … max):  5.983 ms …  6.954 ms  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     6.019 ms              ┊ GC (median):    0.00%
  Time  (mean ± σ):   6.029 ms ± 46.222 μs  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -242,7 +242,7 @@ Note that the `setup` and `teardown` phases are **executed for each sample, not 
 It's possible for LLVM and Julia's compiler to perform optimizations on `@benchmarkable` expressions. In some cases, these optimizations can elide a computation altogether, resulting in unexpectedly "fast" benchmarks. For example, the following expression is non-allocating:
 ```julia
 julia> @benchmark (view(a, 1:2, 1:2); 1) setup=(a = rand(3, 3))
-BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1000 evaluations.
  Range (min … max):  2.885 ns … 14.797 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     2.895 ns              ┊ GC (median):    0.00%
  Time  (mean ± σ):   3.320 ns ±  0.909 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -258,7 +258,7 @@ Note, however, that this does not mean that `view(a, 1:2, 1:2)` is non-allocatin
 
 ```julia
 julia> @benchmark view(a, 1:2, 1:2) setup=(a = rand(3, 3))
-BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1000 evaluations.
  Range (min … max):  3.175 ns … 18.314 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     3.176 ns              ┊ GC (median):    0.00%
  Time  (mean ± σ):   3.262 ns ±  0.882 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -272,7 +272,7 @@ BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
 
 The key point here is that these two benchmarks measure different things, even though their code is similar. In the first example, Julia was able to optimize away `view(a, 1:2, 1:2)` because it could prove that the value wasn't being returned and `a` wasn't being mutated. In the second example, the optimization is not performed because `view(a, 1:2, 1:2)` is a return value of the benchmark expression.
 
-BenchmarkTools will faithfully report the performance of the exact code that you provide to it, including any compiler optimizations that might happen to elide the code completely. It's up to you to design benchmarks which actually exercise the code you intend to exercise. 
+BenchmarkExt will faithfully report the performance of the exact code that you provide to it, including any compiler optimizations that might happen to elide the code completely. It's up to you to design benchmarks which actually exercise the code you intend to exercise. 
 
 A common place julia's optimizer may cause a benchmark to not measure what a user thought it was measuring is simple operations where all values are known at compile time. Suppose you wanted to measure the time it takes to add together two integers:
 ```julia
@@ -292,7 +292,7 @@ julia> @btime $(Ref(a))[] + $(Ref(b))[]
 
 ## Handling benchmark results
 
-BenchmarkTools provides four types related to benchmark results:
+BenchmarkExt provides four types related to benchmark results:
 
 - `Trial`: stores all samples collected during a benchmark trial, as well as the trial's parameters
 - `TrialEstimate`: a single estimate used to summarize a `Trial`
@@ -307,7 +307,7 @@ Running a benchmark produces an instance of the `Trial` type:
 
 ```julia
 julia> t = @benchmark eigen(rand(10, 10))
-BenchmarkTools.Trial: 10000 samples with 1 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1 evaluations.
  Range (min … max):  26.549 μs …  1.503 ms  ┊ GC (min … max): 0.00% … 93.21%
  Time  (median):     30.818 μs              ┊ GC (median):    0.00%
  Time  (mean ± σ):   31.777 μs ± 25.161 μs  ┊ GC (mean ± σ):  1.31% ±  1.63%
@@ -319,8 +319,8 @@ BenchmarkTools.Trial: 10000 samples with 1 evaluations.
  Memory estimate: 16.36 KiB, allocs estimate: 19.
 
 julia> dump(t) # here's what's actually stored in a Trial
-BenchmarkTools.Trial
-  params: BenchmarkTools.Parameters
+BenchmarkExt.Trial
+  params: BenchmarkExt.Parameters
     seconds: Float64 5.0
     samples: Int64 10000
     evals: Int64 1
@@ -339,35 +339,35 @@ As you can see from the above, a couple of different timing estimates are pretty
 
 ```julia
 julia> minimum(t)
-BenchmarkTools.TrialEstimate: 
+BenchmarkExt.TrialEstimate: 
   time:             26.549 μs
   gctime:           0.000 ns (0.00%)
   memory:           16.36 KiB
   allocs:           19
 
 julia> median(t)
-BenchmarkTools.TrialEstimate: 
+BenchmarkExt.TrialEstimate: 
   time:             30.818 μs
   gctime:           0.000 ns (0.00%)
   memory:           16.36 KiB
   allocs:           19
 
 julia> mean(t)
-BenchmarkTools.TrialEstimate: 
+BenchmarkExt.TrialEstimate: 
   time:             31.777 μs
   gctime:           415.686 ns (1.31%)
   memory:           16.36 KiB
   allocs:           19
 
 julia> maximum(t)
-BenchmarkTools.TrialEstimate: 
+BenchmarkExt.TrialEstimate: 
   time:             1.503 ms
   gctime:           1.401 ms (93.21%)
   memory:           16.36 KiB
   allocs:           19
 
 julia> std(t)
-BenchmarkTools.TrialEstimate: 
+BenchmarkExt.TrialEstimate: 
   time:             25.161 μs
   gctime:           23.999 μs (95.38%)
   memory:           16.36 KiB
@@ -385,7 +385,7 @@ Time distributions are always right-skewed for the benchmarks we've tested. This
 
 ### `TrialRatio` and `TrialJudgement`
 
-BenchmarkTools supplies a `ratio` function for comparing two values:
+BenchmarkExt supplies a `ratio` function for comparing two values:
 
 ```julia
 julia> ratio(3, 2)
@@ -405,28 +405,28 @@ julia> ratio(0, 0)
 Calling the `ratio` function on two `TrialEstimate` instances compares their fields:
 
 ```julia
-julia> using BenchmarkTools
+julia> using BenchmarkExt
 
 julia> b = @benchmarkable eigen(rand(10, 10));
 
 julia> tune!(b);
 
 julia> m1 = median(run(b))
-BenchmarkTools.TrialEstimate:
+BenchmarkExt.TrialEstimate:
   time:             38.638 μs
   gctime:           0.000 ns (0.00%)
   memory:           9.30 KiB
   allocs:           28
 
 julia> m2 = median(run(b))
-BenchmarkTools.TrialEstimate:
+BenchmarkExt.TrialEstimate:
   time:             38.723 μs
   gctime:           0.000 ns (0.00%)
   memory:           9.30 KiB
   allocs:           28
 
 julia> ratio(m1, m2)
-BenchmarkTools.TrialRatio:
+BenchmarkExt.TrialRatio:
   time:             0.997792009916587
   gctime:           1.0
   memory:           1.0
@@ -437,14 +437,14 @@ Use the `judge` function to decide if the estimate passed as first argument repr
 
 ```julia
 julia> m1 = median(@benchmark eigen(rand(10, 10)))
-BenchmarkTools.TrialEstimate:
+BenchmarkExt.TrialEstimate:
   time:             38.745 μs
   gctime:           0.000 ns (0.00%)
   memory:           9.30 KiB
   allocs:           28
 
 julia> m2 = median(@benchmark eigen(rand(10, 10)))
-BenchmarkTools.TrialEstimate:
+BenchmarkExt.TrialEstimate:
   time:             38.611 μs
   gctime:           0.000 ns (0.00%)
   memory:           9.30 KiB
@@ -452,19 +452,19 @@ BenchmarkTools.TrialEstimate:
 
 # percent change falls within noise tolerance for all fields
 julia> judge(m1, m2)
-BenchmarkTools.TrialJudgement:
+BenchmarkExt.TrialJudgement:
   time:   +0.35% => invariant (5.00% tolerance)
   memory: +0.00% => invariant (1.00% tolerance)
 
 # changing time_tolerance causes it to be marked as a regression
 julia> judge(m1, m2; time_tolerance = 0.0001)
-BenchmarkTools.TrialJudgement:
+BenchmarkExt.TrialJudgement:
   time:   +0.35% => regression (0.01% tolerance)
   memory: +0.00% => invariant (1.00% tolerance)
 
 # switch m1 & m2; from this perspective, the difference is an improvement
 julia> judge(m2, m1; time_tolerance = 0.0001)
-BenchmarkTools.TrialJudgement:
+BenchmarkExt.TrialJudgement:
   time:   -0.35% => improvement (0.01% tolerance)
   memory: +0.00% => invariant (1.00% tolerance)
 
@@ -510,13 +510,13 @@ Let's look at our newly defined suite in the REPL:
 
 ```julia
 julia> suite
-2-element BenchmarkTools.BenchmarkGroup:
+2-element BenchmarkExt.BenchmarkGroup:
   tags: []
-  "utf8" => 2-element BenchmarkTools.BenchmarkGroup:
+  "utf8" => 2-element BenchmarkExt.BenchmarkGroup:
 	  tags: ["string", "unicode"]
 	  "join" => Benchmark(evals=1, seconds=5.0, samples=10000)
 	  "replace" => Benchmark(evals=1, seconds=5.0, samples=10000)
-  "trig" => 6-element BenchmarkTools.BenchmarkGroup:
+  "trig" => 6-element BenchmarkExt.BenchmarkGroup:
 	  tags: ["math", "triangles"]
 	  ("cos", 0.0) => Benchmark(evals=1, seconds=5.0, samples=10000)
 	  ("sin", π = 3.1415926535897...) => Benchmark(evals=1, seconds=5.0, samples=10000)
@@ -559,7 +559,7 @@ done (took 1.697970114 seconds)
   (6/6) benchmarking ("tan",0.0)...
   done (took 0.320894744 seconds)
 done (took 2.022673065 seconds)
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
   "utf8" => BenchmarkGroup(["string", "unicode"])
   "trig" => BenchmarkGroup(["math", "triangles"])
@@ -572,13 +572,13 @@ Following from the previous section, we see that running our benchmark suite ret
 
 ```julia
 julia> results["utf8"]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: ["string", "unicode"]
   "join" => Trial(133.84 ms) # summary(::Trial) displays the minimum time estimate
   "replace" => Trial(202.3 μs)
 
 julia> results["trig"]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: ["math", "triangles"]
   ("tan",π = 3.1415926535897...) => Trial(28.0 ns)
   ("cos",0.0) => Trial(6.0 ns)
@@ -592,19 +592,19 @@ Most of the functions on result-related types (`Trial`, `TrialEstimate`, `TrialR
 
 ```julia
 julia> m1 = median(results["utf8"]) # == median(results["utf8"])
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: ["string", "unicode"]
   "join" => TrialEstimate(143.68 ms)
   "replace" => TrialEstimate(203.24 μs)
 
 julia> m2 = median(run(suite["utf8"]))
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: ["string", "unicode"]
   "join" => TrialEstimate(144.79 ms)
   "replace" => TrialEstimate(202.49 μs)
 
 julia> judge(m1, m2; time_tolerance = 0.001) # use 0.1 % time tolerance
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: ["string", "unicode"]
   "join" => TrialJudgement(-0.76% => improvement)
   "replace" => TrialJudgement(+0.37% => regression)
@@ -624,18 +624,18 @@ julia> g = BenchmarkGroup([], # no tags in the parent
                                                 "d" => BenchmarkGroup(["8"], 1 => 1),
                                                 "e" => BenchmarkGroup(["9"], 2 => 2)));
 julia> g
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "c" => BenchmarkTools.BenchmarkGroup:
+  "c" => BenchmarkExt.BenchmarkGroup:
 	  tags: ["5", "6", "7"]
-  "b" => BenchmarkTools.BenchmarkGroup:
+  "b" => BenchmarkExt.BenchmarkGroup:
 	  tags: ["3", "4", "5"]
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: ["1", "2", "3"]
-	  "e" => BenchmarkTools.BenchmarkGroup:
+	  "e" => BenchmarkExt.BenchmarkGroup:
 		  tags: ["9"]
 		  2 => 2
-	  "d" => BenchmarkTools.BenchmarkGroup:
+	  "d" => BenchmarkExt.BenchmarkGroup:
 		  tags: ["8"]
 		  1 => 1
 ```
@@ -644,7 +644,7 @@ We can filter this group by tag using the `@tagged` macro. This macro takes in a
 
 ```julia
 julia> g[@tagged ("3" || "7") && !("1")]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
   "c" => BenchmarkGroup(["5", "6", "7"])
   "b" => BenchmarkGroup(["3", "4", "5"])
@@ -662,32 +662,32 @@ To demonstrate the last two points:
 ```julia
 # also could've used `@tagged "1"`, `@tagged "a"`, `@tagged "e" || "d"`
 julia> g[@tagged "8" || "9"]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: ["1", "2", "3"]
-	  "e" => BenchmarkTools.BenchmarkGroup:
+	  "e" => BenchmarkExt.BenchmarkGroup:
 		  tags: ["9"]
 		  2 => 2
-	  "d" => BenchmarkTools.BenchmarkGroup:
+	  "d" => BenchmarkExt.BenchmarkGroup:
 		  tags: ["8"]
 		  1 => 1
 
 julia> g[@tagged "d"]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
     tags: []
-    "a" => BenchmarkTools.BenchmarkGroup:
+    "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: ["1", "2", "3"]
-	  "d" => BenchmarkTools.BenchmarkGroup:
+	  "d" => BenchmarkExt.BenchmarkGroup:
 		  tags: ["8"]
 		  1 => 1
 
 julia> g[@tagged "9"]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: ["1", "2", "3"]
-	  "e" => BenchmarkTools.BenchmarkGroup:
+	  "e" => BenchmarkExt.BenchmarkGroup:
 		  tags: ["9"]
 		  2 => 2
 ```
@@ -698,56 +698,56 @@ It's sometimes useful to create `BenchmarkGroup` where the keys are drawn from o
 
 ```julia
 julia> g # leaf values are integers
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "c" => BenchmarkTools.BenchmarkGroup:
+  "c" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => 1
 	  "2" => 2
 	  "3" => 3
-  "b" => BenchmarkTools.BenchmarkGroup:
+  "b" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => 1
 	  "2" => 2
 	  "3" => 3
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => 1
 	  "2" => 2
 	  "3" => 3
-  "d" => BenchmarkTools.BenchmarkGroup:
+  "d" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => 1
 	  "2" => 2
 	  "3" => 3
 
 julia> x # note that leaf values are characters
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "c" => BenchmarkTools.BenchmarkGroup:
+  "c" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "2" => '2'
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => '1'
 	  "3" => '3'
-  "d" => BenchmarkTools.BenchmarkGroup:
+  "d" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => '1'
 	  "2" => '2'
 	  "3" => '3'
 
 julia> g[x] # index into `g` with the keys of `x`
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "c" => BenchmarkTools.BenchmarkGroup:
+  "c" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "2" => 2
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => 1
 	  "3" => 3
-  "d" => BenchmarkTools.BenchmarkGroup:
+  "d" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  "1" => 1
 	  "2" => 2
@@ -766,28 +766,28 @@ You may have noticed that nested `BenchmarkGroup` instances form a tree-like str
 
 Since these trees can be arbitrarily asymmetric, it can be cumbersome to write certain `BenchmarkGroup` transformations using only the indexing facilities previously discussed.
 
-To solve this problem, BenchmarkTools allows you to uniquely index group nodes using a `Vector` of the node's parents' keys. For example:
+To solve this problem, BenchmarkExt allows you to uniquely index group nodes using a `Vector` of the node's parents' keys. For example:
 
 ```julia
 julia> g = BenchmarkGroup([], 1 => BenchmarkGroup([], "a" => BenchmarkGroup([], :b => 1234)));
 
 julia> g
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  1 => BenchmarkTools.BenchmarkGroup:
+  1 => BenchmarkExt.BenchmarkGroup:
 	  tags: []
-	  "a" => BenchmarkTools.BenchmarkGroup:
+	  "a" => BenchmarkExt.BenchmarkGroup:
 		  tags: []
 		  :b => 1234
 
 julia> g[[1]] # == g[1]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  "a" => BenchmarkTools.BenchmarkGroup:
+  "a" => BenchmarkExt.BenchmarkGroup:
 	  tags: []
 	  :b => 1234
 julia> g[[1, "a"]] # == g[1]["a"]
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
   :b => 1234
 julia> g[[1, "a", :b]] # == g[1]["a"][:b]
@@ -801,11 +801,11 @@ julia> g[[1, "a", :b]] = "hello"
 "hello"
 
 julia> g
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
-  1 => BenchmarkTools.BenchmarkGroup:
+  1 => BenchmarkExt.BenchmarkGroup:
 	  tags: []
-	  "a" => BenchmarkTools.BenchmarkGroup:
+	  "a" => BenchmarkExt.BenchmarkGroup:
 		  tags: []
 		  :b => "hello"
 ```
@@ -817,16 +817,16 @@ julia>  g[[2, "a", :b]] = "hello again"
 "hello again"
 
 julia> g
-2-element BenchmarkTools.BenchmarkGroup:
+2-element BenchmarkExt.BenchmarkGroup:
   tags: []
-  2 => 1-element BenchmarkTools.BenchmarkGroup:
+  2 => 1-element BenchmarkExt.BenchmarkGroup:
           tags: []
-          "a" => 1-element BenchmarkTools.BenchmarkGroup:
+          "a" => 1-element BenchmarkExt.BenchmarkGroup:
                   tags: []
                   :b => "hello again"
-  1 => 1-element BenchmarkTools.BenchmarkGroup:
+  1 => 1-element BenchmarkExt.BenchmarkGroup:
           tags: []
-          "a" => 1-element BenchmarkTools.BenchmarkGroup:
+          "a" => 1-element BenchmarkExt.BenchmarkGroup:
                   tags: []
                   :b => "hello"
 ```
@@ -853,7 +853,7 @@ Note that terminal child group nodes are not considered "leaves" by the `leaves`
 
 ## Caching `Parameters`
 
-A common workflow used in BenchmarkTools is the following:
+A common workflow used in BenchmarkExt is the following:
 
 1. Start a Julia session
 2. Execute a benchmark suite using an old version of your package
@@ -867,12 +867,12 @@ There are a couple of problems with this workflow, and all of which revolve arou
 - Consistency: Given enough time, successive calls to `tune!` will usually yield reasonably consistent values for the "evaluations per sample" parameter, even in spite of noise. However, some benchmarks are highly sensitive to slight changes in this parameter. Thus, it would be best to have some guarantee that all experiments are configured equally (i.e., a guarantee that step 2 will use the exact same parameters as step 5).
 - Turnaround time: For most benchmarks, `tune!` needs to perform many evaluations to determine the proper parameters for any given benchmark - often more evaluations than are performed when running a trial. In fact, the majority of total benchmarking time is usually spent tuning parameters, rather than actually running trials.
 
-BenchmarkTools solves these problems by allowing you to pre-tune your benchmark suite, save the "evaluations per sample" parameters, and load them on demand:
+BenchmarkExt solves these problems by allowing you to pre-tune your benchmark suite, save the "evaluations per sample" parameters, and load them on demand:
 
 ```julia
 # untuned example suite
 julia> suite
-BenchmarkTools.BenchmarkGroup:
+BenchmarkExt.BenchmarkGroup:
   tags: []
   "utf8" => BenchmarkGroup(["string", "unicode"])
   "trig" => BenchmarkGroup(["math", "triangles"])
@@ -882,15 +882,15 @@ julia> tune!(suite);
 
 # save the suite's parameters using a thin wrapper
 # over JSON (this wrapper maintains compatibility
-# across BenchmarkTools versions)
-julia> BenchmarkTools.save("params.json", params(suite));
+# across BenchmarkExt versions)
+julia> BenchmarkExt.save("params.json", params(suite));
 ```
 
 Now, instead of tuning `suite` every time we load the benchmarks in a new Julia session, we can simply load the parameters in the JSON file using the `loadparams!` function. The `[1]` on the `load` call gets the first value that was serialized into the JSON file, which in this case is the parameters.
 
 ```julia
 # syntax is loadparams!(group, paramsgroup, fields...)
-julia> loadparams!(suite, BenchmarkTools.load("params.json")[1], :evals, :samples);
+julia> loadparams!(suite, BenchmarkExt.load("params.json")[1], :evals, :samples);
 ```
 
 Caching parameters in this manner leads to a far shorter turnaround time, and more importantly, much more consistent results.
@@ -905,7 +905,7 @@ julia> io = IOContext(stdout, :histmin=>0.5, :histmax=>8, :logbins=>true)
 IOContext(Base.TTY(RawFD(13) open, 0 bytes waiting))
 
 julia> b = @benchmark x^3   setup=(x = rand()); show(io, MIME("text/plain"), b)
-BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1000 evaluations.
  Range (min … max):  1.239 ns … 31.433 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     1.244 ns              ┊ GC (median):    0.00%
  Time  (mean ± σ):   1.266 ns ±  0.611 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -916,7 +916,7 @@ BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
 
  Memory estimate: 0 bytes, allocs estimate: 0.
 julia> b = @benchmark x^3.0 setup=(x = rand()); show(io, MIME("text/plain"), b)
-BenchmarkTools.Trial: 10000 samples with 1000 evaluations.
+BenchmarkExt.Trial: 10000 samples with 1000 evaluations.
  Range (min … max):  5.636 ns … 38.756 ns  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     5.662 ns              ┊ GC (median):    0.00%
  Time  (mean ± σ):   5.767 ns ±  1.384 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
@@ -959,8 +959,8 @@ This will display each `Trial` as a violin plot.
 
 ## Miscellaneous tips and info
 
-- BenchmarkTools restricts the minimum measurable benchmark execution time to one picosecond.
+- BenchmarkExt restricts the minimum measurable benchmark execution time to one picosecond.
 - If you use `rand` or something similar to generate the values that are used in your benchmarks, you should seed the RNG (or provide a seeded RNG) so that the values are consistent between trials/samples/evaluations.
-- BenchmarkTools attempts to be robust against machine noise occurring between *samples*, but BenchmarkTools can't do very much about machine noise occurring between *trials*. To cut down on the latter kind of noise, it is advised that you dedicate CPUs and memory to the benchmarking Julia process by using a shielding tool such as [cset](http://manpages.ubuntu.com/manpages/precise/man1/cset.1.html).
+- BenchmarkExt attempts to be robust against machine noise occurring between *samples*, but BenchmarkExt can't do very much about machine noise occurring between *trials*. To cut down on the latter kind of noise, it is advised that you dedicate CPUs and memory to the benchmarking Julia process by using a shielding tool such as [cset](http://manpages.ubuntu.com/manpages/precise/man1/cset.1.html).
 - On some machines, for some versions of BLAS and Julia, the number of BLAS worker threads can exceed the number of available cores. This can occasionally result in scheduling issues and inconsistent performance for BLAS-heavy benchmarks. To fix this issue, you can use `BLAS.set_num_threads(i::Int)` in the Julia REPL to ensure that the number of BLAS threads is equal to or less than the number of available cores.
 - `@benchmark` is evaluated in global scope, even if called from local scope.

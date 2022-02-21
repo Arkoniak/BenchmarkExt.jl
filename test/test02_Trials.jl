@@ -2,6 +2,7 @@ module TrialsTests
 
 using BenchmarkExt
 using ReTest
+using StableRNGs
 
 @testset "Trial" begin
     trial1 = BenchmarkExt.Trial(BenchmarkExt.Parameters(evals = 2))
@@ -22,25 +23,28 @@ using ReTest
     @test trial2.params == BenchmarkExt.Parameters(time_tolerance = trial2.params.time_tolerance)
     @test trial1.times == trial2.times == [2.0, 21.0]
     @test trial1.gctimes == trial2.gctimes == [1.0, 0.0]
-    @test trial1.memory == trial2.memory ==  4
-    @test trial1.allocs == trial2.allocs == 5
+    @test trial1.memory == trial2.memory ==  [4, 41]
+    @test trial1.allocs == trial2.allocs == [5, 51]
 
     trial2.params = trial1.params
 
     @test trial1 == trial2
 
-    @test trial1[2] == push!(BenchmarkExt.Trial(BenchmarkExt.Parameters(evals = 2)), 21, 0, 4, 5)
+    @test trial1[2] == push!(BenchmarkExt.Trial(BenchmarkExt.Parameters(evals = 2)), 21, 0, 41, 51)
     @test trial1[1:end] == trial1
 
     @test time(trial1) == time(trial2) == 2.0
     @test gctime(trial1) == gctime(trial2) == 1.0
-    @test memory(trial1) == memory(trial2) == trial1.memory
-    @test allocs(trial1) == allocs(trial2) == trial1.allocs
+    @test memory(trial1) == memory(trial2) == 4.0
+    @test allocs(trial1) == allocs(trial2) == 5.0
     @test params(trial1) == params(trial2) == trial1.params
 
     # outlier trimming
-    trial3 = BenchmarkExt.Trial(BenchmarkExt.Parameters(), [1, 2, 3, 10, 11],
-                                [1, 1, 1, 1, 1], 1, 1)
+    trial3 = BenchmarkExt.Trial(BenchmarkExt.Parameters(), 
+                                [1, 2, 3, 10, 11],
+                                [1, 1, 1, 1, 1], 
+                                [1, 1, 1, 1, 1], 
+                                [1, 1, 1, 1, 1])
 
     trimtrial3 = rmskew(trial3)
     rmskew!(trial3)
@@ -50,14 +54,15 @@ using ReTest
 end
 
 @testset "TrialEstimate" begin
+    rng = StableRNG(22022022)
     randtrial = BenchmarkExt.Trial(BenchmarkExt.Parameters())
 
     for _ in 1:40
-        push!(randtrial, rand(1:20), 1, 1, 1)
+        push!(randtrial, rand(rng, 1:20), 1, 1, 1)
     end
 
     while mean(randtrial) <= median(randtrial)
-        push!(randtrial, rand(10:20), 1, 1, 1)
+        push!(randtrial, rand(rng, 10:20), 1, 1, 1)
     end
 
     rmskew!(randtrial)
@@ -167,6 +172,11 @@ end
 end
 
 @testset "Pretty printing" begin
+    ta = BenchmarkExt.TrialEstimate(BenchmarkExt.Parameters(time_tolerance = 0.50, memory_tolerance = 0.50), 0.49, 0.0, 2, 1)
+    tb = BenchmarkExt.TrialEstimate(BenchmarkExt.Parameters(time_tolerance = 0.05, memory_tolerance = 0.05), 1.00, 0.0, 1, 1)
+    data = read(joinpath(@__DIR__, "data", "test02_pretty.txt"), String)
+    pp = strip.(split(data, "\n\n\n"))
+
     @test BenchmarkExt.prettypercent(.3120123) == "31.20%"
 
     @test BenchmarkExt.prettydiff(0.0) == "-100.00%"
@@ -187,12 +197,8 @@ end
     @test BenchmarkExt.prettymemory(1073741823) == "1024.00 MiB"
     @test BenchmarkExt.prettymemory(1073741824) == "1.00 GiB"
 
-    @test sprint(show, "text/plain", ta) == sprint(show, ta; context=:compact => false) == """
-BenchmarkExt.TrialEstimate: 
-  time:             0.490 ns
-  gctime:           0.000 ns (0.00%)
-  memory:           2 bytes
-  allocs:           1"""
+
+    @test sprint(show, "text/plain", ta) == sprint(show, ta; context=:compact => false) == pp[1]
 
     @test sprint(show, ta) == "TrialEstimate(0.490 ns)"
     @test sprint(
@@ -203,37 +209,17 @@ BenchmarkExt.TrialEstimate:
 
     @test sprint(show, [ta, tb]) == "BenchmarkExt.TrialEstimate[0.490 ns, 1.000 ns]"
 
-    trial1sample = BenchmarkExt.Trial(BenchmarkExt.Parameters(), [1], [1], 1, 1)
+    trial1sample = BenchmarkExt.Trial(BenchmarkExt.Parameters(), [1], [1], [1], [1])
     @test try display(trial1sample); true catch e false end
 
     @static if VERSION < v"1.6-"
-
-    @test sprint(show, "text/plain", [ta, tb]) == """
-2-element Array{BenchmarkExt.TrialEstimate,1}:
- 0.490 ns
- 1.000 ns"""
-
+        @test sprint(show, "text/plain", [ta, tb]) == pp[2]
     else
-
-    @test sprint(show, "text/plain", [ta, tb]) == """
-2-element Vector{BenchmarkExt.TrialEstimate}:
- 0.490 ns
- 1.000 ns"""
-
+        @test sprint(show, "text/plain", [ta, tb]) == pp[3]
     end
 
-    trial = BenchmarkExt.Trial(BenchmarkExt.Parameters(), [1.0, 1.01], [0.0, 0.0], 0, 0)
-    @test sprint(show, "text/plain", trial) == """
-BenchmarkExt.Trial: 2 samples with 1 evaluation.
- Range (min … max):  1.000 ns … 1.010 ns  ┊ GC (min … max): 0.00% … 0.00%
- Time  (median):     1.005 ns             ┊ GC (median):    0.00%
- Time  (mean ± σ):   1.005 ns ± 0.007 ns  ┊ GC (mean ± σ):  0.00% ± 0.00%
-
-  █                                                       █  
-  █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█ ▁
-  1 ns           Histogram: frequency by time       1.01 ns <
-
- Memory estimate: 0 bytes, allocs estimate: 0."""
+    trial = BenchmarkExt.Trial(BenchmarkExt.Parameters(), [1.0, 1.01], [0.0, 0.0], [0, 0], [0, 0])
+    @test sprint(show, "text/plain", trial) == pp[4]
 end
 
 end # module

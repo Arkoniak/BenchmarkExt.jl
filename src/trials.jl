@@ -56,8 +56,8 @@ Base.sort(t::Trial) = sort!(copy(t))
 
 Base.time(t::Trial) = time(minimum(t))
 gctime(t::Trial) = gctime(minimum(t))
-memory(t::Trial) = t.memory
-allocs(t::Trial) = t.allocs
+memory(t::Trial) = memory(minimum(t))
+allocs(t::Trial) = allocs(minimum(t))
 params(t::Trial) = t.params
 
 # returns the index of the first outlier in `values`, if any outliers are detected.
@@ -124,7 +124,7 @@ end
 
 Statistics.median(trial::Trial) = TrialEstimate(trial, median(trial.times), median(trial.gctimes), median(trial.memory), median(trial.allocs))
 Statistics.mean(trial::Trial) = TrialEstimate(trial, mean(trial.times), mean(trial.gctimes), mean(trial.memory), mean(trial.allocs))
-Statistics.std(trial::Trial) = TrialEstimate(trial, std(trial.times), std(trial.gctimes), std(trial.memory), std(trial.allocs))
+Statistics.std(trial::Trial) = TrialEstimate(trial, std(trial.times), std(trial.gctimes), std(Float64.(trial.memory)), std(Float64.(trial.allocs)))
 
 Base.isless(a::TrialEstimate, b::TrialEstimate) = isless(time(a), time(b))
 
@@ -272,7 +272,7 @@ end
 
 function prettymemory(b)
     if b < 1024
-        return string(b, " bytes")
+        return string(round(Int, b), " bytes")
     elseif b < 1024^2
         value, units = b / 1024, "KiB"
     elseif b < 1024^3
@@ -345,7 +345,7 @@ Base.show(io::IO, t::TrialJudgement) = _show(io, t)
 function Base.show(io::IO, ::MIME"text/plain", t::Trial)
 
     pad = get(io, :pad, "")
-    print(io, "BenchmarkTools.Trial: ", length(t), " sample", if length(t) > 1 "s" else "" end,
+    print(io, "BenchmarkExt.Trial: ", length(t), " sample", if length(t) > 1 "s" else "" end,
           " with ", t.params.evals, " evaluation", if t.params.evals > 1 "s" else "" end ,".\n")
 
     perm = sortperm(t.times)
@@ -366,7 +366,7 @@ function Base.show(io::IO, ::MIME"text/plain", t::Trial)
         maxtime, maxgc = prettytime(time(max)), prettypercent(gcratio(max))
 
         memorystr = string(prettymemory(memory(min)))
-        allocsstr = string(allocs(min))
+        allocsstr = string(round(Int, allocs(min)))
     elseif length(t) == 1
         print(io, pad, " Single result which took ")
         printstyled(io, prettytime(times[1]); color=:blue)
@@ -508,16 +508,16 @@ function Base.show(io::IO, ::MIME"text/plain", t::Trial)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", t::TrialEstimate)
-    println(io, "BenchmarkTools.TrialEstimate: ")
+    println(io, "BenchmarkExt.TrialEstimate: ")
     pad = get(io, :pad, "")
     println(io, pad, "  time:             ", prettytime(time(t)))
     println(io, pad, "  gctime:           ", prettytime(gctime(t)), " (", prettypercent(gctime(t) / time(t)),")")
     println(io, pad, "  memory:           ", prettymemory(memory(t)))
-    print(io,   pad, "  allocs:           ", allocs(t))
+    print(io,   pad, "  allocs:           ", round(Int, allocs(t)))
 end
 
 function Base.show(io::IO, ::MIME"text/plain", t::TrialRatio)
-    println(io, "BenchmarkTools.TrialRatio: ")
+    println(io, "BenchmarkExt.TrialRatio: ")
     pad = get(io, :pad, "")
     println(io, pad, "  time:             ", time(t))
     println(io, pad, "  gctime:           ", gctime(t))
@@ -526,7 +526,7 @@ function Base.show(io::IO, ::MIME"text/plain", t::TrialRatio)
 end
 
 function Base.show(io::IO, ::MIME"text/plain", t::TrialJudgement)
-    println(io, "BenchmarkTools.TrialJudgement: ")
+    println(io, "BenchmarkExt.TrialJudgement: ")
     pad = get(io, :pad, "")
     print(io, pad, "  time:   ", prettydiff(time(ratio(t))), " => ")
     printtimejudge(io, t)

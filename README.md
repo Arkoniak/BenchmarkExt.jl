@@ -1,11 +1,11 @@
-# BenchmarkTools.jl
+# BenchmarkExt.jl
 
 [![][docs-stable-img]][docs-stable-url]
 [![][docs-dev-img]][docs-dev-url]
-[![Build Status](https://github.com/JuliaCI/BenchmarkTools.jl/workflows/CI/badge.svg)](https://github.com/JuliaCI/BenchmarkTools.jl/actions/workflows/CI.yml?query=branch%3Amaster)
-[![Code Coverage](https://codecov.io/gh/JuliaCI/BenchmarkTools.jl/branch/master/graph/badge.svg?label=codecov&token=ccN7NZpkBx)](https://codecov.io/gh/JuliaCI/BenchmarkTools.jl)
+[![Build Status](https://github.com/JuliaCI/BenchmarkExt.jl/workflows/CI/badge.svg)](https://github.com/JuliaCI/BenchmarkExt.jl/actions/workflows/CI.yml?query=branch%3Amaster)
+[![Code Coverage](https://codecov.io/gh/JuliaCI/BenchmarkExt.jl/branch/master/graph/badge.svg?label=codecov&token=ccN7NZpkBx)](https://codecov.io/gh/JuliaCI/BenchmarkExt.jl)
 
-BenchmarkTools makes **performance tracking of Julia code easy** by supplying a framework for **writing and running groups of benchmarks** as well as **comparing benchmark results**.
+BenchmarkExt makes **performance tracking of Julia code easy** by supplying a framework for **writing and running groups of benchmarks** as well as **comparing benchmark results**.
 
 This package is used to write and run the benchmarks found in [BaseBenchmarks.jl](https://github.com/JuliaCI/BaseBenchmarks.jl).
 
@@ -14,44 +14,44 @@ The CI infrastructure for automated performance testing of the Julia language is
 ## Installation
 
 <p>
-BenchmarkTools is a &nbsp;
+BenchmarkExt is a &nbsp;
     <a href="https://julialang.org">
         <img src="https://raw.githubusercontent.com/JuliaLang/julia-logo-graphics/master/images/julia.ico" width="16em">
         Julia Language
     </a>
-    &nbsp; package. To install BenchmarkTools,
+    &nbsp; package. To install BenchmarkExt,
     please <a href="https://docs.julialang.org/en/v1/manual/getting-started/">open
     Julia's interactive session (known as REPL)</a> and press <kbd>]</kbd> key in the REPL to use the package mode, then type the following command
 </p>
 
 ```julia
-pkg> add BenchmarkTools
+pkg> add BenchmarkExt
 ```
 
 ## Documentation
 
-If you're just getting started, check out the [manual](https://juliaci.github.io/BenchmarkTools.jl/dev/manual/) for a thorough explanation of BenchmarkTools.
+If you're just getting started, check out the [manual](https://juliaci.github.io/BenchmarkExt.jl/dev/manual/) for a thorough explanation of BenchmarkExt.
 
-If you want to explore the BenchmarkTools API, see the [reference document](https://juliaci.github.io/BenchmarkTools.jl/dev/reference/).
+If you want to explore the BenchmarkExt API, see the [reference document](https://juliaci.github.io/BenchmarkExt.jl/dev/reference/).
 
 If you want a short example of a toy benchmark suite, see the sample file in this repo ([benchmark/benchmarks.jl](benchmark/benchmarks.jl)).
 
 If you want an extensive example of a benchmark suite being used in the real world, you can look at the source code of [BaseBenchmarks.jl](https://github.com/JuliaCI/BaseBenchmarks.jl/tree/nanosoldier).
 
-If you're benchmarking on Linux, I wrote up a series of [tips and tricks](https://juliaci.github.io/BenchmarkTools.jl/dev/linuxtips/) to help eliminate noise during performance tests.
+If you're benchmarking on Linux, I wrote up a series of [tips and tricks](https://juliaci.github.io/BenchmarkExt.jl/dev/linuxtips/) to help eliminate noise during performance tests.
 
 ## Quick Start
 
-The primary macro provided by BenchmarkTools is `@benchmark`:
+The primary macro provided by BenchmarkExt is `@benchmark`:
 
 ```julia
-julia> using BenchmarkTools
+julia> using BenchmarkExt
 
 # The `setup` expression is run once per sample, and is not included in the
 # timing results. Note that each sample can require multiple evaluations
-# benchmark kernel evaluations. See the BenchmarkTools manual for details.
+# benchmark kernel evaluations. See the BenchmarkExt manual for details.
 julia> @benchmark sort(data) setup=(data=rand(10))
-BenchmarkTools.Trial: 10000 samples with 972 evaluations.
+BenchmarkExt.Trial: 10000 samples with 972 evaluations.
  Range (min … max):  69.399 ns …  1.066 μs  ┊ GC (min … max): 0.00% … 0.00%
  Time  (median):     83.850 ns              ┊ GC (median):    0.00%
  Time  (mean ± σ):   89.471 ns ± 53.666 ns  ┊ GC (mean ± σ):  3.25% ± 5.16%
@@ -63,7 +63,7 @@ BenchmarkTools.Trial: 10000 samples with 972 evaluations.
  Memory estimate: 160 bytes, allocs estimate: 1.
 ```
 
-For quick sanity checks, one can use the [`@btime` macro](https://juliaci.github.io/BenchmarkTools.jl/stable/manual/#Benchmarking-basics), which is a convenience wrapper around `@benchmark` whose output is analogous to Julia's built-in [`@time` macro](https://docs.julialang.org/en/v1/base/base/#Base.@time):
+For quick sanity checks, one can use the [`@btime` macro](https://juliaci.github.io/BenchmarkExt.jl/stable/manual/#Benchmarking-basics), which is a convenience wrapper around `@benchmark` whose output is analogous to Julia's built-in [`@time` macro](https://docs.julialang.org/en/v1/base/base/#Base.@time):
 
 ```julia
 # The `seconds` expression helps set a rough time budget, see Manual for more explaination
@@ -72,7 +72,7 @@ julia> @btime sin(x) setup=(x=rand()) seconds=3
 0.49587200950472454
 ```
 
-If the expression you want to benchmark depends on external variables, you should use [`$` to "interpolate"](https://juliaci.github.io/BenchmarkTools.jl/stable/manual/#Interpolating-values-into-benchmark-expressions) them into the benchmark expression to
+If the expression you want to benchmark depends on external variables, you should use [`$` to "interpolate"](https://juliaci.github.io/BenchmarkExt.jl/stable/manual/#Interpolating-values-into-benchmark-expressions) them into the benchmark expression to
 [avoid the problems of benchmarking with globals](https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-global-variables).
 Essentially, any interpolated variable `$x` or expression `$(...)` is "pre-computed" before benchmarking begins:
 
@@ -105,7 +105,7 @@ julia> @btime $(Ref(a))[] + $(Ref(b))[]
 3
 ```
 
-As described the [manual](https://juliaci.github.io/BenchmarkTools.jl/dev/manual/), the BenchmarkTools package supports many other features, both for additional output and for more fine-grained control over the benchmarking process.
+As described the [manual](https://juliaci.github.io/BenchmarkExt.jl/dev/manual/), the BenchmarkExt package supports many other features, both for additional output and for more fine-grained control over the benchmarking process.
 
 ## Why does this package exist?
 
@@ -119,7 +119,7 @@ For a while, the Benchmarks + BenchmarkTrackers system was used for automated pe
 4. Running benchmarks took a long time - an order of magnitude longer than theoretically necessary for many functions.
 5. Using the system in the REPL (for example, to reproduce regressions locally) was often cumbersome.
 
-The BenchmarkTools package is a response to these issues, designed by examining user reports and the benchmark data generated by the old system. BenchmarkTools offers the following solutions to the corresponding issues above:
+The BenchmarkExt package is a response to these issues, designed by examining user reports and the benchmark data generated by the old system. BenchmarkExt offers the following solutions to the corresponding issues above:
 
 1. Benchmark execution parameters are configured separately from the execution of the benchmark itself. This means that subsequent experiments are performed more consistently, avoiding branching "substrategies" based on small numbers of samples.
 2. A variety of simple estimators are supported, and the user can pick which one to use for regression detection.
@@ -131,12 +131,12 @@ The BenchmarkTools package is a response to these issues, designed by examining 
 
 This package was authored primarily by Jarrett Revels (@jrevels). Additionally, I'd like to thank the following people:
 
-- John Myles White, for authoring the original Benchmarks package, which greatly inspired BenchmarkTools
+- John Myles White, for authoring the original Benchmarks package, which greatly inspired BenchmarkExt
 - Andreas Noack, for statistics help and investigating weird benchmark time distributions
 - Oscar Blumberg, for discussions on noise robustness
 - Jiahao Chen, for discussions on error analysis
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
-[docs-dev-url]: https://JuliaCI.github.io/BenchmarkTools.jl/dev/
+[docs-dev-url]: https://JuliaCI.github.io/BenchmarkExt.jl/dev/
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
-[docs-stable-url]: https://JuliaCI.github.io/BenchmarkTools.jl/stable
+[docs-stable-url]: https://JuliaCI.github.io/BenchmarkExt.jl/stable

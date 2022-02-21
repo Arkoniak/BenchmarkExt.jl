@@ -33,7 +33,7 @@ function recover(x::Vector)
     length(x) == 2 || throw(ArgumentError("Expecting a vector of length 2"))
     typename = x[1]::String
     fields = x[2]::Dict
-    startswith(typename, "BenchmarkTools.") && (typename = typename[sizeof("BenchmarkTools.")+1:end])
+    startswith(typename, "BenchmarkExt.") && (typename = typename[sizeof("BenchmarkExt.")+1:end])
     T = SUPPORTED_TYPES[Symbol(typename)]
     fc = fieldcount(T)
     xs = Vector{Any}(undef, fc)
@@ -72,7 +72,7 @@ function badext(filename)
         "JLD serialization is no longer supported. Benchmarks should now be saved in\n" *
         "JSON format using `save(\"$noext.json\", args...)` and loaded from JSON using\n" *
         "`load(\"$noext.json\", args...)`. You will need to convert existing saved\n" *
-        "benchmarks to JSON in order to use them with this version of BenchmarkTools."
+        "benchmarks to JSON in order to use them with this version of BenchmarkExt."
     else
         "Only JSON serialization is supported."
     end
@@ -96,7 +96,7 @@ function save(io::IO, args...)
                   "in the order it appears in the input.")
             continue
         elseif !(arg isa get(SUPPORTED_TYPES, typeof(arg).name.name, Union{}))
-            throw(ArgumentError("Only BenchmarkTools types can be serialized."))
+            throw(ArgumentError("Only BenchmarkExt types can be serialized."))
         end
         push!(goodargs, arg)
     end
@@ -118,7 +118,7 @@ function load(io::IO, args...)
     end
     parsed = JSON.parse(io)
     if !isa(parsed, Vector) || length(parsed) != 2 || !isa(parsed[1], Dict) || !isa(parsed[2], Vector)
-        error("Unexpected JSON format. Was this file originally written by BenchmarkTools?")
+        error("Unexpected JSON format. Was this file originally written by BenchmarkExt?")
     end
     versions = parsed[1]::Dict
     values = parsed[2]::Vector

@@ -1,5 +1,5 @@
 
-using BenchmarkTools
+using BenchmarkExt
 
 # Define a parent BenchmarkGroup to contain our suite
 const suite = BenchmarkGroup()
@@ -30,8 +30,8 @@ end
 paramspath = joinpath(dirname(@__FILE__), "params.json")
 
 if isfile(paramspath)
-    loadparams!(suite, BenchmarkTools.load(paramspath)[1], :evals);
+    loadparams!(suite, BenchmarkExt.load(paramspath)[1], :evals);
 else
     tune!(suite)
-    BenchmarkTools.save(paramspath, params(suite));
+    BenchmarkExt.save(paramspath, params(suite));
 end
