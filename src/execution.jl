@@ -576,7 +576,7 @@ macro btime(args...)
         $tune_phase
         local $trial, $result = $BenchmarkExt.run_result($bench)
         local $trialmin = $BenchmarkExt.minimum($trial)
-        local $trialallocs = $BenchmarkExt.allocs($trialmin)
+        local $trialallocs = $BenchmarkExt.iallocs($trialmin)
         println("  ",
                 $BenchmarkExt.prettytime($BenchmarkExt.time($trialmin)),
                 " (", $trialallocs , " allocation",

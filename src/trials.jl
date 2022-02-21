@@ -132,6 +132,7 @@ Base.time(t::TrialEstimate) = t.time
 gctime(t::TrialEstimate) = t.gctime
 memory(t::TrialEstimate) = t.memory
 allocs(t::TrialEstimate) = t.allocs
+iallocs(t::TrialEstimate) = round(Int, t.allocs)
 params(t::TrialEstimate) = t.params
 
 ##############
