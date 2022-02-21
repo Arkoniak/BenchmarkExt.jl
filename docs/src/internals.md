@@ -1,7 +1,7 @@
 # Internals
 
 ```@autodocs
-Modules = [BenchmarkTools]
+Modules = [BenchmarkExt]
 Public = false
 Filter = f -> f !== Base.run
 ```

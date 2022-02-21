@@ -1,9 +1,9 @@
 module SerializationTests
 
-using BenchmarkTools
-using Test
+using BenchmarkExt
+using ReTest
 
-eq(x::T, y::T) where {T<:Union{values(BenchmarkTools.SUPPORTED_TYPES)...}} =
+eq(x::T, y::T) where {T<:Union{values(BenchmarkExt.SUPPORTED_TYPES)...}} =
     all(i->eq(getfield(x, i), getfield(y, i)), 1:fieldcount(T))
 eq(x::T, y::T) where {T} = isapprox(x, y)
 
@@ -25,10 +25,10 @@ end
     withtempdir() do
         tmp = joinpath(pwd(), "tmp.json")
 
-        BenchmarkTools.save(tmp, b.params, bb)
+        BenchmarkExt.save(tmp, b.params, bb)
         @test isfile(tmp)
 
-        results = BenchmarkTools.load(tmp)
+        results = BenchmarkExt.load(tmp)
         @test results isa Vector{Any}
         @test length(results) == 2
         @test eq(results[1], b.params)
@@ -43,9 +43,9 @@ end
         g["a"] = BenchmarkGroup()
         g["b"] = BenchmarkGroup()
         g["c"] = BenchmarkGroup()
-        BenchmarkTools.save(tmp, g)
+        BenchmarkExt.save(tmp, g)
 
-        results = BenchmarkTools.load(tmp)[1]
+        results = BenchmarkExt.load(tmp)[1]
         @test results isa BenchmarkGroup
         @test all(v->v isa BenchmarkGroup, values(results.data))
     end
@@ -56,23 +56,23 @@ end
     tune!(b)
     bb = run(b)
 
-    @test_throws ArgumentError BenchmarkTools.save("x.jld", b.params)
-    @test_throws ArgumentError BenchmarkTools.save("x.txt", b.params)
-    @test_throws ArgumentError BenchmarkTools.save("x.json")
-    @test_throws ArgumentError BenchmarkTools.save("x.json", 1)
+    @test_throws ArgumentError BenchmarkExt.save("x.jld", b.params)
+    @test_throws ArgumentError BenchmarkExt.save("x.txt", b.params)
+    @test_throws ArgumentError BenchmarkExt.save("x.json")
+    @test_throws ArgumentError BenchmarkExt.save("x.json", 1)
 
     withtempdir() do
         tmp = joinpath(pwd(), "tmp.json")
-        @test_logs (:warn, r"Naming variables") BenchmarkTools.save(tmp, "b", b.params)
+        @test_logs (:warn, r"Naming variables") BenchmarkExt.save(tmp, "b", b.params)
         @test isfile(tmp)
-        results = BenchmarkTools.load(tmp)
+        results = BenchmarkExt.load(tmp)
         @test length(results) == 1
         @test eq(results[1], b.params)
     end
 
-    @test_throws ArgumentError BenchmarkTools.load("x.jld")
-    @test_throws ArgumentError BenchmarkTools.load("x.txt")
-    @test_throws ArgumentError BenchmarkTools.load("x.json", "b")
+    @test_throws ArgumentError BenchmarkExt.load("x.jld")
+    @test_throws ArgumentError BenchmarkExt.load("x.txt")
+    @test_throws ArgumentError BenchmarkExt.load("x.json", "b")
 end
 
 @testset "Error checking" begin
@@ -84,7 +84,7 @@ end
             """)
         end
         try
-            BenchmarkTools.load(tmp)
+            BenchmarkExt.load(tmp)
             error("madness")
         catch err
             # This function thows a bunch of errors, so test for this specifically
@@ -92,7 +92,7 @@ end
         end
     end
 
-    @test_throws ArgumentError BenchmarkTools.recover([1])
+    @test_throws ArgumentError BenchmarkExt.recover([1])
 end
 
 end # module

@@ -43,7 +43,7 @@ function Parameters(default::Parameters; seconds = nothing, samples = nothing,
     params.gcsample = gcsample != nothing ? gcsample : default.gcsample
     params.time_tolerance = time_tolerance != nothing ? time_tolerance : default.time_tolerance
     params.memory_tolerance = memory_tolerance != nothing ? memory_tolerance : default.memory_tolerance
-    return params::BenchmarkTools.Parameters
+    return params::BenchmarkExt.Parameters
 end
 
 function Base.:(==)(a::Parameters, b::Parameters)

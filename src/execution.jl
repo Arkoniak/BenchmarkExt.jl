@@ -339,7 +339,7 @@ to benchmark.
 
 ```julia-repl
 julia> @benchmark sin(1)
-BenchmarkTools.Trial:
+BenchmarkExt.Trial:
   memory estimate:  0 bytes
   allocs estimate:  0
   --------------
@@ -357,7 +357,7 @@ You can interpolate values into `@benchmark` expressions:
 ```julia
 # rand(1000) is executed for each evaluation
 julia> @benchmark sum(rand(1000))
-BenchmarkTools.Trial:
+BenchmarkExt.Trial:
   memory estimate:  7.94 KiB
   allocs estimate:  1
   --------------
@@ -372,7 +372,7 @@ BenchmarkTools.Trial:
 # rand(1000) is evaluated at definition time, and the resulting
 # value is interpolated into the benchmark expression
 julia> @benchmark sum($(rand(1000)))
-BenchmarkTools.Trial:
+BenchmarkExt.Trial:
   memory estimate:  0 bytes
   allocs estimate:  0
   --------------
@@ -389,10 +389,10 @@ macro benchmark(args...)
     _, params = prunekwargs(args...)
     tmp = gensym()
     return esc(quote
-        local $tmp = $BenchmarkTools.@benchmarkable $(args...)
-        $BenchmarkTools.warmup($tmp)
-        $(hasevals(params) ? :() : :($BenchmarkTools.tune!($tmp)))
-        $BenchmarkTools.run($tmp)
+        local $tmp = $BenchmarkExt.@benchmarkable $(args...)
+        $BenchmarkExt.warmup($tmp)
+        $(hasevals(params) ? :() : :($BenchmarkExt.tune!($tmp)))
+        $BenchmarkExt.run($tmp)
     end)
 end
 
@@ -487,7 +487,7 @@ function generate_benchmark_definition(eval_module, out_vars, setup_vars, quote_
     end
     return Core.eval(eval_module, quote
         @noinline $(signature_def) = begin $(core_body) end
-        @noinline function $(samplefunc)($(Expr(:tuple, quote_vars...)), __params::$BenchmarkTools.Parameters)
+        @noinline function $(samplefunc)($(Expr(:tuple, quote_vars...)), __params::$BenchmarkExt.Parameters)
             $(setup)
             __evals = __params.evals
             __gc_start = Base.gc_num()
@@ -507,7 +507,7 @@ function generate_benchmark_definition(eval_module, out_vars, setup_vars, quote_
                                __evals))
             return __time, __gctime, __memory, __allocs, __return_val
         end
-        $BenchmarkTools.Benchmark($(samplefunc), $(quote_vals), $(params))
+        $BenchmarkExt.Benchmark($(samplefunc), $(quote_vals), $(params))
     end)
 end
 
@@ -531,7 +531,7 @@ is the *minimum* elapsed time measured during the benchmark.
 """
 macro belapsed(args...)
     return esc(quote
-        $BenchmarkTools.time($BenchmarkTools.minimum($BenchmarkTools.@benchmark $(args...)))/1e9
+        $BenchmarkExt.time($BenchmarkExt.minimum($BenchmarkExt.@benchmark $(args...)))/1e9
     end)
 end
 
@@ -548,7 +548,7 @@ during the benchmark.
 """
 macro ballocated(args...)
     return esc(quote
-        $BenchmarkTools.memory($BenchmarkTools.minimum($BenchmarkTools.@benchmark $(args...)))
+        $BenchmarkExt.memory($BenchmarkExt.minimum($BenchmarkExt.@benchmark $(args...)))
     end)
 end
 
@@ -569,19 +569,19 @@ macro btime(args...)
     _, params = prunekwargs(args...)
     bench, trial, result = gensym(), gensym(), gensym()
     trialmin, trialallocs = gensym(), gensym()
-    tune_phase = hasevals(params) ? :() : :($BenchmarkTools.tune!($bench))
+    tune_phase = hasevals(params) ? :() : :($BenchmarkExt.tune!($bench))
     return esc(quote
-        local $bench = $BenchmarkTools.@benchmarkable $(args...)
-        $BenchmarkTools.warmup($bench)
+        local $bench = $BenchmarkExt.@benchmarkable $(args...)
+        $BenchmarkExt.warmup($bench)
         $tune_phase
-        local $trial, $result = $BenchmarkTools.run_result($bench)
-        local $trialmin = $BenchmarkTools.minimum($trial)
-        local $trialallocs = $BenchmarkTools.allocs($trialmin)
+        local $trial, $result = $BenchmarkExt.run_result($bench)
+        local $trialmin = $BenchmarkExt.minimum($trial)
+        local $trialallocs = $BenchmarkExt.iallocs($trialmin)
         println("  ",
-                $BenchmarkTools.prettytime($BenchmarkTools.time($trialmin)),
+                $BenchmarkExt.prettytime($BenchmarkExt.time($trialmin)),
                 " (", $trialallocs , " allocation",
                 $trialallocs == 1 ? "" : "s", ": ",
-                $BenchmarkTools.prettymemory($BenchmarkTools.memory($trialmin)), ")")
+                $BenchmarkExt.prettymemory($BenchmarkExt.memory($trialmin)), ")")
         $result
     end)
 end
@@ -611,10 +611,10 @@ macro bprofile(args...)
     end
     tmp = gensym()
     return esc(quote
-        local $tmp = $BenchmarkTools.@benchmarkable $(args...)
-        $BenchmarkTools.warmup($tmp)
-        $(hasevals(params) ? :() : :($BenchmarkTools.tune!($tmp)))
-        $BenchmarkTools.Profile.clear()
-        $BenchmarkTools.@profile $BenchmarkTools.run($tmp)
+        local $tmp = $BenchmarkExt.@benchmarkable $(args...)
+        $BenchmarkExt.warmup($tmp)
+        $(hasevals(params) ? :() : :($BenchmarkExt.tune!($tmp)))
+        $BenchmarkExt.Profile.clear()
+        $BenchmarkExt.@profile $BenchmarkExt.run($tmp)
     end)
 end

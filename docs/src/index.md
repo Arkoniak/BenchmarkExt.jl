@@ -1,6 +1,6 @@
-# BenchmarkTools
+# BenchmarkExt
 
-BenchmarkTools makes **performance tracking of Julia code easy** by supplying a framework for **writing and running groups of benchmarks** as well as **comparing benchmark results**.
+BenchmarkExt makes **performance tracking of Julia code easy** by supplying a framework for **writing and running groups of benchmarks** as well as **comparing benchmark results**.
 
 This package is used to write and run the benchmarks found in [BaseBenchmarks.jl](https://github.com/JuliaCI/BaseBenchmarks.jl).
 
@@ -8,16 +8,16 @@ The CI infrastructure for automated performance testing of the Julia language is
 
 ## Quick Start
 
-The primary macro provided by BenchmarkTools is `@benchmark`:
+The primary macro provided by BenchmarkExt is `@benchmark`:
 
 ```julia
-julia> using BenchmarkTools
+julia> using BenchmarkExt
 
 # The `setup` expression is run once per sample, and is not included in the
 # timing results. Note that each sample can require multiple evaluations
-# benchmark kernel evaluations. See the BenchmarkTools manual for details.
+# benchmark kernel evaluations. See the BenchmarkExt manual for details.
 julia> @benchmark sort(data) setup=(data=rand(10))
-BenchmarkTools.Trial:
+BenchmarkExt.Trial:
  10000 samples with 968 evaulations took a median time of 90.902 ns (0.00% GC)
  Time  (mean ± σ):   94.936 ns ±  47.797 ns  (GC: 2.78% ±  5.03%)
  Range (min … max):  77.655 ns … 954.823 ns  (GC: 0.00% … 87.94%)
@@ -29,7 +29,7 @@ BenchmarkTools.Trial:
  Memory estimate: 160 bytes, allocs estimate: 1.
 ```
 
-For quick sanity checks, one can use the [`@btime` macro](https://github.com/JuliaCI/BenchmarkTools.jl/blob/master/doc/manual.md#benchmarking-basics), which is a convenience wrapper around `@benchmark` whose output is analogous to Julia's built-in [`@time` macro](https://docs.julialang.org/en/v1/base/base/#Base.@time):
+For quick sanity checks, one can use the [`@btime` macro](https://github.com/JuliaCI/BenchmarkExt.jl/blob/master/doc/manual.md#benchmarking-basics), which is a convenience wrapper around `@benchmark` whose output is analogous to Julia's built-in [`@time` macro](https://docs.julialang.org/en/v1/base/base/#Base.@time):
 
 ```julia
 julia> @btime sin(x) setup=(x=rand())
@@ -40,7 +40,7 @@ julia> @btime sin(x) setup=(x=rand())
 If you're interested in profiling a fast-running command, you can use `@bprofile sin(x) setup=(x=rand())` and then your favorite
 tools for displaying the results (`Profile.print` or a graphical viewer).
 
-If the expression you want to benchmark depends on external variables, you should use [`$` to "interpolate"](https://github.com/JuliaCI/BenchmarkTools.jl/blob/master/doc/manual.md#interpolating-values-into-benchmark-expressions) them into the benchmark expression to
+If the expression you want to benchmark depends on external variables, you should use [`$` to "interpolate"](https://github.com/JuliaCI/BenchmarkExt.jl/blob/master/doc/manual.md#interpolating-values-into-benchmark-expressions) them into the benchmark expression to
 [avoid the problems of benchmarking with globals](https://docs.julialang.org/en/v1/manual/performance-tips/#Avoid-global-variables).
 Essentially, any interpolated variable `$x` or expression `$(...)` is "pre-computed" before benchmarking begins:
 
@@ -73,4 +73,4 @@ julia> @btime $(Ref(a))[] + $(Ref(b))[]
 3
 ```
 
-As described the [Manual](@ref), the BenchmarkTools package supports many other features, both for additional output and for more fine-grained control over the benchmarking process.
+As described the [Manual](@ref), the BenchmarkExt package supports many other features, both for additional output and for more fine-grained control over the benchmarking process.
