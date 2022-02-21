@@ -60,6 +60,7 @@ function setup_extra(g1, g2, gtrial)
     (groupsa, g3a, groupsb, g3b, groupstrial, groups_copy, groups_similar)
 end
 
+struct Bar end
 @testset "BenchmarkGroup" begin
     g1, g1copy, g1similar, g2, gtrial, t1a, t1b, tc, t2a, t2b = setup_vals()
 
@@ -130,7 +131,6 @@ end
     @test improvements(judge(g1, g2)).data == Dict("a" => judge(t1a, t2a))
 
     @testset "struct Bar" begin
-        struct Bar end
         @test BenchmarkExt.invariants(Bar()) == Bar()
         @test BenchmarkExt.invariants(time, (Bar())) == Bar()
         @test BenchmarkExt.invariants(memory, (Bar())) == Bar()
