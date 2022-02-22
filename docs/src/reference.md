@@ -1,7 +1,7 @@
 # References
 
 ```@autodocs
-Modules = [BenchmarkTools]
+Modules = [BenchmarkExt]
 Private = false
 ```
 

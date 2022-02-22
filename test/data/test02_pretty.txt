@@ -25,3 +25,16 @@ BenchmarkExt.Trial: 2 samples with 1 evaluation.
   1 ns           Histogram: frequency by time       1.01 ns <
 
  Memory estimate: 0 bytes, allocs estimate: 0.
+
+
+BenchmarkExt.Trial:
+  memory estimate:  0 bytes
+  allocs estimate:  0
+  --------------
+  minimum time:     1.000 ns (0.00% GC)
+  median time:      1.005 ns (0.00% GC)
+  mean time:        1.005 ns (0.00% GC)
+  maximum time:     1.010 ns (0.00% GC)
+  --------------
+  samples:          2
+  evals/sample:     1

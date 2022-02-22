@@ -26,7 +26,7 @@ function show_output(::TrialClassicalOutputPre, io, ::MIME"text/plain", t::Trial
         medstr = "N/A"
         meanstr = "N/A"
     end
-    println(io, "BenchmarkTools.Trial: ")
+    println(io, "BenchmarkExt.Trial:")
     pad = get(io, :pad, "")
     println(io, pad, "  memory estimate:  ", memorystr)
     println(io, pad, "  allocs estimate:  ", allocsstr)

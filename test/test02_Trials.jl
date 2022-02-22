@@ -219,7 +219,12 @@ end
     end
 
     trial = BenchmarkExt.Trial(BenchmarkExt.Parameters(), [1.0, 1.01], [0.0, 0.0], [0, 0], [0, 0])
+
+    BenchmarkExt.set_preferences!(benchmark_output = "fancy", benchmark_histogram = "fancy")
     @test sprint(show, "text/plain", trial) == pp[4]
+
+    BenchmarkExt.set_preferences!(benchmark_output = "classical", benchmark_histogram = "classical")
+    @test sprint(show, "text/plain", trial) == pp[5]
 end
 
 end # module
