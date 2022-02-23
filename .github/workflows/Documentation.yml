@@ -1,15 +1,15 @@
-name: Documentation
+# name: Documentation
 
-on:
-  push:
-    branches:
-      - master
-    tags: '*'
+# on:
+#   push:
+#     branches:
+#       - master
+#     tags: '*'
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
       # - uses: actions/checkout@v2
       # - uses: julia-actions/setup-julia@latest
       #   with:
