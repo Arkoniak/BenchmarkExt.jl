@@ -125,33 +125,43 @@ const foo = Foo(-1)
 
     # test kwargs separated by `,`
     @benchmark(output=sin(x), setup=(x=1.0; output=0.0), teardown=(@test output == sin(x)))
+end
 
-    for (tf, rex1, rex2) in ((false, r"0.5 ns +Histogram: frequency by time +8 ns",        r"Histogram: frequency"),
-                             (true,  r"0.5 ns +Histogram: log\(frequency\) by time +8 ns", r"Histogram: log\(frequency\)"))
-        io = IOBuffer()
-        ioctx = IOContext(io, :histmin=>0.5, :histmax=>8, :logbins=>tf)
-        @show tf
-        b = @benchmark x^3   setup=(x = rand()); show(ioctx, MIME("text/plain"), b)
-        b = @benchmark x^3.0 setup=(x = rand()); show(ioctx, MIME("text/plain"), b)
-        str = String(take!(io))
-        idx = findfirst(rex1, str)
-        @test isa(idx, UnitRange)
-        idx = findnext( rex1, str, idx[end]+1)
-        @test isa(idx, UnitRange)
-        ioctx = IOContext(io, :logbins=>tf)
-        # A flat distribution won't trigger log by default
-        b = BenchmarkExt.Trial(BenchmarkExt.DEFAULT_PARAMETERS, 0.001 * (1:100) * 1e9, zeros(100), zeros(Int, 100), zeros(Int, 100))
-        show(ioctx, MIME("text/plain"), b)
-        str = String(take!(io))
-        idx = findfirst(rex2, str)
-        @test isa(idx, UnitRange)
-        # A peaked distribution will trigger log by default
-        t = [fill(1, 21); 2]
-        b = BenchmarkExt.Trial(BenchmarkExt.DEFAULT_PARAMETERS, t/sum(t)*1e9*BenchmarkExt.DEFAULT_PARAMETERS.seconds, zeros(100), zeros(Int, 100), zeros(Int, 100))
-        show(ioctx, MIME("text/plain"), b)
-        str = String(take!(io))
-        idx = findfirst(rex2, str)
-        @test isa(idx, UnitRange)
+@testset "Pretty printing" begin
+    @testset "Fancy output" begin
+        BenchmarkExt.PREFS.benchmark_output = "fancy"
+        BenchmarkExt.PREFS.benchmark_histogram = "fancy"
+
+        for (tf, rex1, rex2) in ((false, r"0.5 ns +Histogram: frequency by time +8 ns",        r"Histogram: frequency"),
+                                 (true,  r"0.5 ns +Histogram: log\(frequency\) by time +8 ns", r"Histogram: log\(frequency\)"))
+            io = IOBuffer()
+            ioctx = IOContext(io, :histmin=>0.5, :histmax=>8, :logbins=>tf)
+            @show tf
+            b = @benchmark x^3   setup=(x = rand()); show(ioctx, MIME("text/plain"), b)
+            b = @benchmark x^3.0 setup=(x = rand()); show(ioctx, MIME("text/plain"), b)
+            str = String(take!(io))
+            idx = findfirst(rex1, str)
+            @test isa(idx, UnitRange)
+            idx = findnext( rex1, str, idx[end]+1)
+            @test isa(idx, UnitRange)
+            ioctx = IOContext(io, :logbins=>tf)
+            # A flat distribution won't trigger log by default
+            b = BenchmarkExt.Trial(BenchmarkExt.DEFAULT_PARAMETERS, 0.001 * (1:100) * 1e9, zeros(100), zeros(Int, 100), zeros(Int, 100))
+            show(ioctx, MIME("text/plain"), b)
+            str = String(take!(io))
+            idx = findfirst(rex2, str)
+            @test isa(idx, UnitRange)
+            # A peaked distribution will trigger log by default
+            t = [fill(1, 21); 2]
+            b = BenchmarkExt.Trial(BenchmarkExt.DEFAULT_PARAMETERS, t/sum(t)*1e9*BenchmarkExt.DEFAULT_PARAMETERS.seconds, zeros(100), zeros(Int, 100), zeros(Int, 100))
+            show(ioctx, MIME("text/plain"), b)
+            str = String(take!(io))
+            idx = findfirst(rex2, str)
+            @test isa(idx, UnitRange)
+        end
+
+        BenchmarkExt.PREFS.benchmark_output = "classical"
+        BenchmarkExt.PREFS.benchmark_histogram = "classical"
     end
 end
 

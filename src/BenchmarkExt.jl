@@ -8,21 +8,33 @@ using Statistics
 using UUIDs: uuid4
 using Printf
 using Profile
-
+using TOML
 
 const BENCHMARKEXT_VERSION = v"0.1.0"
 
-##############
-# Parameters #
-##############
+########################################
+# Preferences
+########################################
+
+include("preferences.jl")
+
+# Public unexported API:
+#    set_preferences,
+#    save_preferences!,
+#    load_preferences!
+
+
+########################################
+# Parameters
+########################################
 
 include("parameters.jl")
 
 export loadparams!
 
-##############
-# Trial Data #
-##############
+########################################
+# Trial Data
+########################################
 
 include("trials.jl")
 
@@ -41,9 +53,9 @@ export gctime,
        rmskew,
        trim
 
-##################
-# Benchmark Data #
-##################
+########################################
+# Benchmark Data
+########################################
 
 include("groups.jl")
 
@@ -57,9 +69,9 @@ export BenchmarkGroup,
        @benchmarkset,
        @case
 
-######################
-# Execution Strategy #
-######################
+########################################
+# Execution Strategy 
+########################################
 
 include("execution.jl")
 
@@ -72,10 +84,23 @@ export tune!,
        @btime,
        @bprofile
 
-#################
-# Serialization #
-#################
+########################################
+# Serialization
+########################################
 
 include("serialization.jl")
+
+########################################
+# Pretty printing
+########################################
+
+include("pprints/trial_classical.jl")
+include("pprints/trial_fancy.jl")
+
+########################################
+# Initialization
+########################################
+
+include("init.jl")
 
 end # module BenchmarkExt
