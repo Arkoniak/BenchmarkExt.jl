@@ -15,7 +15,7 @@ struct BenchmarkGroup <: AbstractBenchmark
 end
 StructTypes.StructType(::Type{BenchmarkGroup}) = StructTypes.CustomStruct()
 StructTypes.lower(x::BenchmarkGroup) = (type="benchmark_group", data = (; tags=x.tags, data=x.data))
-StructTypes.lowertype(::Type{BenchmarkGroup}) = @NamedTuple{type::String, data::Any}
+StructTypes.lowertype(::Type{BenchmarkGroup}) = NamedTuple{(:type, :data), Tuple{String, Any}}
 
 # It's far from perfect, but it's the best I can do now
 function BenchmarkGroup(x::NamedTuple)
