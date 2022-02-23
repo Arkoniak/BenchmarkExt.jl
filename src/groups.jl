@@ -9,11 +9,34 @@ makekey(v::Integer) = typemin(Int) <= v <= typemax(Int) ? Int(v) : string(v)
 makekey(v::Tuple) = (Any[i isa Tuple ? string(i) : makekey(i) for i in v]...,)::Tuple{Vararg{KeyTypes}}
 makekey(v::Any) = string(v)::String
 
-struct BenchmarkGroup
+struct BenchmarkGroup <: AbstractBenchmark
     tags::Vector{Any}
     data::Dict{Any,Any}
 end
-StructTypes.StructType(::Type{BenchmarkGroup}) = StructTypes.Struct()
+StructTypes.StructType(::Type{BenchmarkGroup}) = StructTypes.CustomStruct()
+StructTypes.lower(x::BenchmarkGroup) = (type="benchmark_group", data = (; tags=x.tags, data=x.data))
+StructTypes.lowertype(::Type{BenchmarkGroup}) = @NamedTuple{type::String, data::Any}
+
+# It's far from perfect, but it's the best I can do now
+function BenchmarkGroup(x::NamedTuple)
+    rdata = Dict{Any, Any}()
+    for (k, v) in x.data["data"]
+        if v isa Dict && haskey(v, "type")
+            types = StructTypes.subtypes(BenchmarkExt.AbstractBenchmark)
+            tp = Symbol(v["type"])
+            if tp in keys(types)
+                TT = getfield(types, tp)
+                rdata[k] = TT((; type = v["type"], data = v["data"]))
+            else
+                rdata[k] = v
+            end
+        else
+            rdata[k] = v
+        end
+    end
+    BenchmarkGroup(x.data["tags"], rdata)
+end
+
 
 BenchmarkGroup(tags::Vector, args::Pair...) = BenchmarkGroup(tags, Dict{Any,Any}((makekey(k) => v for (k, v) in args)))
 BenchmarkGroup(args::Pair...) = BenchmarkGroup([], args...)

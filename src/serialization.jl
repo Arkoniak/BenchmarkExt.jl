@@ -1,3 +1,6 @@
+StructTypes.subtypes(::Type{AbstractBenchmark}) = (benchmark_group=BenchmarkGroup,)
+const BENCHMARKEXT_VERSION = v"0.1.0"
+
 function snake_case(camelsymbol::Symbol)
     camelstring = String(camelsymbol)
 
@@ -15,7 +18,7 @@ function snake_case(camelsymbol::Symbol)
 end
 
 # TODO: Add any new types as they're added
-const SUPPORTED_TYPES = Dict{Symbol, Symbol}(Base.typename(x).name => snake_case(Base.typename(x).name) for x in [ BenchmarkGroup, Parameters, TagFilter, Trial,
+const SUPPORTED_TYPES = Dict{Symbol, Symbol}(Base.typename(x).name => snake_case(Base.typename(x).name) for x in [Parameters, BenchmarkGroup, TagFilter, Trial,
     TrialEstimate, TrialJudgement, TrialRatio])
 # n.b. Benchmark type not included here, since it is gensym'd
 
@@ -34,7 +37,8 @@ mutable struct Serializator
 end
 StructTypes.StructType(::Type{Serializator}) = StructTypes.Mutable()
 StructTypes.omitempties(::Type{Serializator}) = true
-Serializator() = Serializator(string(VERSION), string(BENCHMARKEXT_VERSION), Dict(), Dict(), Dict(), Dict(), Dict(), Dict(), Dict())
+Serializator(julia, version) = Serializator(julia, version, Dict(), Dict(), Dict(), Dict(), Dict(), Dict(), Dict())
+Serializator() = Serializator("", "")
 
 function badext(filename)
     noext, ext = splitext(filename)
@@ -56,7 +60,7 @@ end
 
 function save(io::IO, args...)
     isempty(args) && throw(ArgumentError("Nothing to save"))
-    ser = Serializator()
+    ser = Serializator(string(VERSION), string(BENCHMARKEXT_VERSION))
     store = false
     for arg in args
         name = typeof(arg).name.name
@@ -91,6 +95,9 @@ end
 
 function load(io::IO, pattern = nothing, group = true)
     parsed = JSON3.read(io, Serializator)
+    if isempty(parsed.julia) || isempty(parsed.benchmark_version)
+        error("Unexpected JSON format") 
+    end
     if pattern !== nothing
         for name in values(SUPPORTED_TYPES)
             field = getfield(parsed, name)
@@ -101,7 +108,8 @@ function load(io::IO, pattern = nothing, group = true)
     group || return parsed
 
     res = []
-    for name in values(SUPPORTED_TYPES)
+    for name in fieldnames(Serializator)
+        name in values(SUPPORTED_TYPES) || continue
         append!(res, values(getfield(parsed, name)))
     end
 
