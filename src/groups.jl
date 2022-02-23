@@ -13,6 +13,7 @@ struct BenchmarkGroup
     tags::Vector{Any}
     data::Dict{Any,Any}
 end
+StructTypes.StructType(::Type{BenchmarkGroup}) = StructTypes.Struct()
 
 BenchmarkGroup(tags::Vector, args::Pair...) = BenchmarkGroup(tags, Dict{Any,Any}((makekey(k) => v for (k, v) in args)))
 BenchmarkGroup(args::Pair...) = BenchmarkGroup([], args...)
@@ -165,6 +166,7 @@ end
 struct TagFilter
     predicate
 end
+StructTypes.StructType(::Type{TagFilter}) = StructTypes.Struct()
 
 macro tagged(expr)
     return :(BenchmarkExt.TagFilter(tags -> $(tagpredicate!(expr))))

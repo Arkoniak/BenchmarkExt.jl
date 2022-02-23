@@ -9,8 +9,10 @@ mutable struct Trial
     memory::Vector{Int}
     allocs::Vector{Int}
 end
+StructTypes.StructType(::Type{Trial}) = StructTypes.Mutable()
 
 Trial(params::Parameters) = Trial(params, Float64[], Float64[], Int[], Int[])
+Trial() = Trial(Parameters())
 
 function Base.:(==)(a::Trial, b::Trial)
     return a.params == b.params &&
@@ -97,6 +99,7 @@ mutable struct TrialEstimate
     memory::Float64
     allocs::Float64
 end
+StructTypes.StructType(::Type{TrialEstimate}) = StructTypes.Mutable()
 
 function TrialEstimate(trial::Trial, t, gct, mem, alloc)
     return TrialEstimate(params(trial), t, gct, mem, alloc)
@@ -146,6 +149,7 @@ mutable struct TrialRatio
     memory::Float64
     allocs::Float64
 end
+StructTypes.StructType(::Type{TrialRatio}) = StructTypes.Mutable()
 
 function Base.:(==)(a::TrialRatio, b::TrialRatio)
     return a.params == b.params &&
@@ -189,6 +193,8 @@ struct TrialJudgement
     time::Symbol
     memory::Symbol
 end
+StructTypes.StructType(::Type{TrialJudgement}) = StructTypes.Struct()
+
 
 function TrialJudgement(r::TrialRatio)
     ttol = params(r).time_tolerance
