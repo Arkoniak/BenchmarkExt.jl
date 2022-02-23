@@ -1,6 +1,5 @@
 module BenchmarkExt
 
-using JSON
 using Base.Iterators
 
 using Logging: @logmsg, LogLevel
@@ -9,8 +8,11 @@ using UUIDs: uuid4
 using Printf
 using Profile
 using TOML
+using StructTypes
+using JSON3
 
-const BENCHMARKEXT_VERSION = v"0.1.0"
+abstract type AbstractBenchmark end
+StructTypes.StructType(::Type{AbstractBenchmark}) = StructTypes.AbstractType()
 
 ########################################
 # Preferences

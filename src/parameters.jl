@@ -15,6 +15,7 @@ mutable struct Parameters
     time_tolerance::Float64
     memory_tolerance::Float64
 end
+StructTypes.StructType(::Type{Parameters}) = StructTypes.Struct()
 
 const DEFAULT_PARAMETERS = Parameters(5.0, 10000, 1, 0, true, false, 0.05, 0.01)
 

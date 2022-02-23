@@ -3,7 +3,9 @@ module SerializationTests
 using BenchmarkExt
 using ReTest
 
-eq(x::T, y::T) where {T<:Union{values(BenchmarkExt.SUPPORTED_TYPES)...}} =
+BENCHMARK_TYPES = getfield.(Ref(BenchmarkExt), keys(BenchmarkExt.SUPPORTED_TYPES))
+
+eq(x::T, y::T) where {T<:Union{BENCHMARK_TYPES...}} =
     all(i->eq(getfield(x, i), getfield(y, i)), 1:fieldcount(T))
 eq(x::T, y::T) where {T} = isapprox(x, y)
 
@@ -61,15 +63,6 @@ end
     @test_throws ArgumentError BenchmarkExt.save("x.json")
     @test_throws ArgumentError BenchmarkExt.save("x.json", 1)
 
-    withtempdir() do
-        tmp = joinpath(pwd(), "tmp.json")
-        @test_logs (:warn, r"Naming variables") BenchmarkExt.save(tmp, "b", b.params)
-        @test isfile(tmp)
-        results = BenchmarkExt.load(tmp)
-        @test length(results) == 1
-        @test eq(results[1], b.params)
-    end
-
     @test_throws ArgumentError BenchmarkExt.load("x.jld")
     @test_throws ArgumentError BenchmarkExt.load("x.txt")
     @test_throws ArgumentError BenchmarkExt.load("x.json", "b")
@@ -91,8 +84,6 @@ end
             @test occursin("Unexpected JSON format", err.msg)
         end
     end
-
-    @test_throws ArgumentError BenchmarkExt.recover([1])
 end
 
 end # module
